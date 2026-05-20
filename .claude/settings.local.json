@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Dell\\\\Documents\\\\UPB\\\\5to Semestre\\\\Certificacion III\\\\proyectos Idea\\\\ecommerce\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)"
+    ]
+  }
+}
