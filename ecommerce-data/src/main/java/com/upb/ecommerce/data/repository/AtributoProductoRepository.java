@@ -1,0 +1,15 @@
+package com.upb.ecommerce.data.repository;
+
+import com.upb.ecommerce.domain.entities.AtributoProducto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface AtributoProductoRepository extends JpaRepository<AtributoProducto, Long> {
+
+    List<AtributoProducto> findByProductoId(Long productoId);
+
+    void deleteByProductoId(Long productoId);
+}
