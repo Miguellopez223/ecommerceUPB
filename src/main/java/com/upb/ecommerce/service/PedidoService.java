@@ -20,17 +20,23 @@ public class PedidoService {
     private final ProductoRepository productoRepository;
     private final TiendaRepository tiendaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final MovimientoInventarioRepository movimientoInventarioRepository;
+    private final DireccionEnvioRepository direccionEnvioRepository;
 
     public PedidoService(PedidoRepository pedidoRepository,
                          CarritoRepository carritoRepository,
                          ProductoRepository productoRepository,
                          TiendaRepository tiendaRepository,
-                         UsuarioRepository usuarioRepository) {
+                         UsuarioRepository usuarioRepository,
+                         MovimientoInventarioRepository movimientoInventarioRepository,
+                         DireccionEnvioRepository direccionEnvioRepository) {
         this.pedidoRepository = pedidoRepository;
         this.carritoRepository = carritoRepository;
         this.productoRepository = productoRepository;
         this.tiendaRepository = tiendaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.movimientoInventarioRepository = movimientoInventarioRepository;
+        this.direccionEnvioRepository = direccionEnvioRepository;
     }
 
     public List<PedidoResponse> listarPorUsuario(Long tiendaId, Long usuarioId) {
@@ -68,6 +74,13 @@ public class PedidoService {
         pedido.setCodigoSeguimiento("PED-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         pedido.setDetalles(new ArrayList<>());
 
+        // Asignar dirección de envío si se provee
+        if (request.getDireccionId() != null) {
+            DireccionEnvio direccion = direccionEnvioRepository.findById(request.getDireccionId())
+                    .orElseThrow(() -> new RuntimeException("Dirección no encontrada"));
+            pedido.setDireccionEnvio(direccion);
+        }
+
         BigDecimal total = BigDecimal.ZERO;
 
         for (DetalleCarrito dc : carrito.getDetalles()) {
@@ -88,6 +101,15 @@ public class PedidoService {
             pedido.getDetalles().add(dp);
 
             total = total.add(dc.getPrecioUnitario().multiply(BigDecimal.valueOf(dc.getCantidad())));
+
+            // Registrar movimiento de inventario (SALIDA automática)
+            MovimientoInventario mov = new MovimientoInventario();
+            mov.setTienda(tienda);
+            mov.setProducto(producto);
+            mov.setTipo("SALIDA");
+            mov.setCantidad(dc.getCantidad());
+            mov.setReferencia("Venta pedido #" + pedido.getCodigoSeguimiento());
+            movimientoInventarioRepository.save(mov);
         }
 
         pedido.setTotal(total);
