@@ -1,6 +1,7 @@
 package com.upb.ecommerce.core.dto.response;
 
 import com.upb.ecommerce.domain.entities.Usuario;
+import com.upb.ecommerce.domain.enums.RolType;
 import lombok.Data;
 
 @Data
@@ -10,7 +11,7 @@ public class UsuarioResponse {
     private Long tiendaId;
     private String nombre;
     private String email;
-    private String rol;
+    private RolType rol;
     private Boolean estado;
 
     public static UsuarioResponse fromEntity(Usuario u) {

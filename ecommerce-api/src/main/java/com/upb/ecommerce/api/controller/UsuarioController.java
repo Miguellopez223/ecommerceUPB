@@ -1,6 +1,5 @@
 package com.upb.ecommerce.api.controller;
 
-import com.upb.ecommerce.core.dto.request.LoginRequest;
 import com.upb.ecommerce.core.dto.request.UsuarioRequest;
 import com.upb.ecommerce.core.dto.response.UsuarioResponse;
 import com.upb.ecommerce.core.service.UsuarioService;
@@ -11,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Gestión CRUD de usuarios. El login se movió a {@link AuthController} en /api/auth.
+ */
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -34,11 +36,6 @@ public class UsuarioController {
     @PostMapping("/registrar")
     public ResponseEntity<UsuarioResponse> registrar(@Valid @RequestBody UsuarioRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.registrar(request));
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<UsuarioResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(usuarioService.login(request));
     }
 
     @PutMapping("/{id}")

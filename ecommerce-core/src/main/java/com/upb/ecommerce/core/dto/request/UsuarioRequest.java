@@ -1,5 +1,6 @@
 package com.upb.ecommerce.core.dto.request;
 
+import com.upb.ecommerce.domain.enums.RolType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,7 +22,7 @@ public class UsuarioRequest {
     @NotBlank
     private String password;
 
-    /** "ADMIN" o "CLIENTE" */
-    @NotBlank
-    private String rol;
+    /** ADMIN o CLIENTE — Jackson deserializa automáticamente desde el JSON string. */
+    @NotNull
+    private RolType rol;
 }

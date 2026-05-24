@@ -4,54 +4,52 @@ import com.upb.ecommerce.data.repository.TiendaRepository;
 import com.upb.ecommerce.data.repository.UsuarioRepository;
 import com.upb.ecommerce.domain.entities.Tienda;
 import com.upb.ecommerce.domain.entities.Usuario;
+import com.upb.ecommerce.domain.enums.RolType;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
+@AllArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
     private final TiendaRepository tiendaRepository;
     private final UsuarioRepository usuarioRepository;
-
-    public DataSeeder(TiendaRepository tiendaRepository, UsuarioRepository usuarioRepository) {
-        this.tiendaRepository = tiendaRepository;
-        this.usuarioRepository = usuarioRepository;
-    }
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void run(String... args) {
-        System.out.println("==================================================");
-        System.out.println("INICIANDO POBLACIÓN DE DATOS DE PRUEBA...");
-        System.out.println("==================================================");
+    public void run(String... args) throws Exception {
+        init();
+    }
 
-        Tienda tienda = tiendaRepository.findBySlug("comercio1")
-                .orElseGet(() -> {
-                    System.out.println("Creando tienda matriz: Comercio1...");
-                    Tienda nueva = new Tienda();
-                    nueva.setNombre("Comercio1 Inventario General");
-                    nueva.setSlug("comercio1");
-                    nueva.setTelefonoContacto("77712345");
-                    nueva.setEmailContacto("contacto@comercio1.com");
-                    return tiendaRepository.save(nueva);
-                });
+    private void init() {
+        // Crear tienda inicial solo si no existe ninguna
+        if (tiendaRepository.count() == 0) {
+            Tienda tienda = new Tienda();
+            tienda.setNombre("Comercio1 Inventario General");
+            tienda.setSlug("comercio1");
+            tienda.setTelefonoContacto("77712345");
+            tienda.setEmailContacto("contacto@comercio1.com");
+            tiendaRepository.save(tienda);
+            log.info("Tienda inicial creada: {}", tienda.getNombre());
+        }
 
-        usuarioRepository.findByEmailAndTiendaId("admin@comercio1.com", tienda.getId())
-                .orElseGet(() -> {
-                    System.out.println("Creando usuario administrador...");
-                    Usuario admin = new Usuario();
-                    admin.setTienda(tienda);
-                    admin.setNombre("Roberto Rodriguez");
-                    admin.setEmail("admin@comercio1.com");
-                    admin.setPassword("123456"); // TODO: encriptar con BCrypt
-                    admin.setRol("ADMIN");
-                    return usuarioRepository.save(admin);
-                });
+        // Crear usuario admin solo si no existe ningún usuario
+        if (usuarioRepository.count() == 0) {
+            Tienda tienda = tiendaRepository.findBySlug("comercio1")
+                    .orElseThrow(() -> new RuntimeException("Tienda inicial no encontrada"));
 
-        System.out.println("\nDATOS EN POSTGRESQL:");
-        tiendaRepository.findAll().forEach(t ->
-                System.out.println("  Tienda → ID: " + t.getId() + " | " + t.getNombre() + " | slug: " + t.getSlug()));
-        usuarioRepository.findAll().forEach(u ->
-                System.out.println("  Usuario → ID: " + u.getId() + " | " + u.getNombre() + " | Rol: " + u.getRol()));
-        System.out.println("==================================================\n");
+            Usuario admin = new Usuario();
+            admin.setTienda(tienda);
+            admin.setNombre("Roberto Rodriguez");
+            admin.setEmail("admin@comercio1.com");
+            admin.setPassword(passwordEncoder.encode("Admin123**"));
+            admin.setRol(RolType.ADMIN);
+            usuarioRepository.save(admin);
+            log.info("Usuario admin creado: {} | password: Admin123**", admin.getEmail());
+        }
     }
 }
