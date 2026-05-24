@@ -10,13 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import tools.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
@@ -29,7 +28,9 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         try {
             String token = jwtTokenProvider.resolveToken(request.getHeader("Authorization"));
@@ -56,8 +57,8 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
         } catch (Exception e) {
             log.error("Excepción genérica al validar el JWT", e);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write(new ObjectMapper().writeValueAsString(HttpStatus.INTERNAL_SERVER_ERROR));
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.getWriter().write("{\"error\":\"Error interno del servidor\"}");
         }
     }
 
