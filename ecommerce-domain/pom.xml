@@ -20,6 +20,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <!-- Spring Security Core (provided — resuelto por ecommerce-api en runtime) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Lombok para reducir boilerplate (@Data, @NoArgsConstructor) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
