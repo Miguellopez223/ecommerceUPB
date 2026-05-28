@@ -21,6 +21,7 @@
         <module>ecommerce-data</module>
         <module>ecommerce-core</module>
         <module>ecommerce-api</module>
+        <module>examen-api</module>
     </modules>
 
     <properties>
@@ -46,6 +47,11 @@
             <dependency>
                 <groupId>com.upb</groupId>
                 <artifactId>ecommerce-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.upb</groupId>
+                <artifactId>examen-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

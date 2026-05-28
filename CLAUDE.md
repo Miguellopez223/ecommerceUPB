@@ -32,7 +32,7 @@ mvn clean install -DskipTests
 
 ## Architecture
 
-**Stack:** Spring Boot 4.0.6, Spring Data JPA, Spring Security (disabled — all endpoints permitAll), PostgreSQL, Lombok.
+**Stack:** Spring Boot 4.0.6, Spring Data JPA, Spring Security + JWT, PostgreSQL, Lombok.
 
 **Multi-module Maven project** (dependency flows top-down):
 
@@ -48,12 +48,15 @@ ecommerce-api      — REST controllers, Spring Security config, GlobalException
 
 **Package namespaces per module:**
 - `com.upb.ecommerce.domain.entities` — entities
+- `com.upb.ecommerce.domain.enums` — RolType, UsuarioStatus
 - `com.upb.ecommerce.data.repository` — repositories
 - `com.upb.ecommerce.data.seeders` — DataSeeder
 - `com.upb.ecommerce.core.service` — services
 - `com.upb.ecommerce.core.dto.request` / `.response` — DTOs
-- `com.upb.ecommerce.api.controller` — controllers
-- `com.upb.ecommerce.api.config` — SecurityConfig, GlobalExceptionHandler
+- `com.upb.ecommerce.core.exception` — custom exceptions (NotDataFoundException)
+- `com.upb.ecommerce.api.controller` — controllers (including AuthController)
+- `com.upb.ecommerce.api.config` — SecurityConfig, JwtTokenProvider, JwtTokenFilter, GlobalExceptionHandler
+- `com.upb.ecommerce.api.exception` — InvalidJwtAuthenticationException
 
 **Legacy single-module code** still exists under `src/main/java/com/upb/ecommerce/` (controllers, services, DTOs, repositories, entities). The active code is in the four `ecommerce-*` modules; the `src/` tree is from before the split and is not part of the build.
 
@@ -73,5 +76,20 @@ ecommerce-api      — REST controllers, Spring Security config, GlobalException
 - Lombok `@Data` + `@NoArgsConstructor` on all entities
 - FetchType.LAZY on `@ManyToOne` relationships
 - Constructor-based dependency injection (no `@Autowired` on fields)
-- User roles are string-based: `"ADMIN"` or `"CLIENTE"`
+- User roles use `RolType` enum: `ADMIN` or `CLIENTE` (stored as String via `@Enumerated(EnumType.STRING)`)
 - Services throw `RuntimeException` with Spanish messages for not-found cases
+
+**Security:**
+- JWT-based stateless authentication (token expires after 480 minutes / 8 hours)
+- JWT claims: `sub` = email, `jti` = userId (used for session validation via optimized JPQL query)
+- `Usuario` entity implements `UserDetails` — used directly as the Spring Security principal
+- Password encoding: `DelegatingPasswordEncoder` (bcrypt default) via `InjectConfiguration`
+- Public endpoints: `POST /api/auth` (login), `POST /api/usuarios/registrar`, `GET/POST /api/tiendas`, Swagger UI
+- All other endpoints require a valid JWT in the `Authorization: Bearer <token>` header
+- Login requires email + password + tiendaId (multi-tenant auth)
+
+**Error handling (GlobalExceptionHandler):**
+- `NotDataFoundException` → 404
+- `RuntimeException` → 400 (used as general business-logic error)
+- `MethodArgumentNotValidException` → 400 with field-level errors map
+- `InvalidJwtAuthenticationException` → 401

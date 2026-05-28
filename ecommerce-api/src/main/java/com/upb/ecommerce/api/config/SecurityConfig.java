@@ -45,6 +45,8 @@ public class SecurityConfig implements Serializable {
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/registrar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tiendas").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/tiendas").permitAll()
+                        // Módulo examen-api: CRUD público (no requiere Token)
+                        .requestMatchers("/api/examen/**").permitAll()
                         .requestMatchers("/error").anonymous()
                         // Todo lo demás requiere JWT
                         .anyRequest().authenticated()
