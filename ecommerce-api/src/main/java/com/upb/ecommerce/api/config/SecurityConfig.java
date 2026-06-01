@@ -40,13 +40,13 @@ public class SecurityConfig implements Serializable {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        // Endpoints públicos — registro, login (auth) y gestión de tiendas
+                        // Endpoints publicos - registro, login (auth) y gestion de tiendas
                         .requestMatchers(HttpMethod.POST, "/api/auth").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/registrar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tiendas").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/tiendas").permitAll()
                         .requestMatchers("/error").anonymous()
-                        // Todo lo demás requiere JWT
+                        // Todo lo demas requiere JWT
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

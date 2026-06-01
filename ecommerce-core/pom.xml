@@ -31,6 +31,13 @@
             <artifactId>spring-security-core</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Spring Web: RestClient para consumir el backend del sistema externo
+             (provided — resuelto por ecommerce-api en runtime) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Jackson Annotations para @JsonProperty en DTOs -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
