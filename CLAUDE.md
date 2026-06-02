@@ -31,6 +31,14 @@ mvn clean install -DskipTests
 - Database schema must already exist (Hibernate ddl-auto is set to `validate`)
 - DataSeeder auto-creates an admin user on startup: `admin@comercio1.com` / `123456`
 
+## Getting Started
+
+1. Ensure PostgreSQL is running and the `ecommerceUPB` database exists
+2. Run `mvn clean install` from the root directory to build all modules
+3. Start the app with `mvn -pl ecommerce-api spring-boot:run` (runs on `http://localhost:8081`)
+4. Access Swagger UI at `http://localhost:8081/swagger-ui.html` to explore and test endpoints
+5. Login with admin credentials to get a JWT token; include it as `Authorization: Bearer <token>` in subsequent requests
+
 ## Architecture
 
 **Stack:** Spring Boot 4.0.6, Spring Data JPA, Spring Security + JWT (jjwt 0.12.6), PostgreSQL, Lombok.
@@ -92,7 +100,11 @@ Every entity is scoped to a `Tienda` (store). Users, products, orders, carts, an
 
 ## External System Integration
 
+### Remote Ecommerce Instance
 `SistemaExternoService` in `ecommerce-core` consumes a peer ecommerce instance (configured via `sistema.externo.url` in application.properties). Flow: authenticate first via `POST /api/auth/externo`, which caches the JWT token in-memory, then call endpoints to list/create clients and products on the remote system. Uses Spring's `RestClient`.
+
+### Stereum API (QR Payment Generation)
+QR code generation for payments is handled via Stereum API (`stereum.url-base` and `stereum.api-key` in application.properties). The integration generates payment QR codes for orders. See relevant endpoints under `Pedido` resource for QR generation details. Stereum API calls use RestClient with configurable timeouts (read-timeout is high at 20s to allow QR generation).
 
 ## Conventions
 
@@ -106,3 +118,11 @@ Every entity is scoped to a `Tienda` (store). Users, products, orders, carts, an
 - Services throw `NotDataFoundException` with Spanish messages for not-found cases
 - User roles are the `RolType` enum (`ADMIN`, `CLIENTE`)
 - Passwords stored with BCrypt (via `PasswordEncoder` bean in `InjectConfiguration`)
+
+## Common Gotchas
+
+- **Legacy code under `src/`**: The multi-module code under `ecommerce-*` is active. The old single-module code tree at `src/main/java/com/upb/ecommerce/` is legacy and not part of the build — avoid editing it.
+- **Database schema validation**: Hibernate ddl-auto is set to `validate`, so the schema must exist before startup. If adding new entities, manually create the table first or temporarily switch to `update` mode.
+- **Per-tienda email uniqueness**: User email addresses are unique per tienda, not globally. Different stores can have users with the same email.
+- **JWT expiration**: Token expiration is set to 480 minutes (8 hours) in application.properties. Tokens will silently fail after expiration; clients must re-login.
+- **Lazy loading outside transactions**: If you access lazy-loaded relationships outside a transaction (e.g., in a controller after the service returns), you'll get a LazyInitializationException. Use `@Transactional` on service methods or eagerly fetch in queries.
