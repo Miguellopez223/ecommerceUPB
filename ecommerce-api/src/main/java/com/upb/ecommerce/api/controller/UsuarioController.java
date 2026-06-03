@@ -6,6 +6,7 @@ import com.upb.ecommerce.core.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/tienda/{tiendaId}")
     public ResponseEntity<List<UsuarioResponse>> listarPorTienda(@PathVariable Long tiendaId) {
         return ResponseEntity.ok(usuarioService.listarPorTienda(tiendaId));
@@ -44,9 +46,16 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.actualizar(id, request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> desactivar(@PathVariable Long id) {
         usuarioService.desactivar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/reactivar")
+    public ResponseEntity<UsuarioResponse> reactivar(@PathVariable Long id) {
+        return ResponseEntity.ok(usuarioService.reactivar(id));
     }
 }

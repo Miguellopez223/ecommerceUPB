@@ -1,8 +1,12 @@
 package com.upb.ecommerce.api.controller;
 
 import com.upb.ecommerce.api.config.JwtTokenProvider;
+import com.upb.ecommerce.api.config.TokenBlacklist;
 import com.upb.ecommerce.core.dto.request.LoginRequest;
 import com.upb.ecommerce.core.dto.response.LoginResponse;
+import com.upb.ecommerce.core.integracion.SistemaExternoAuthRequest;
+import com.upb.ecommerce.core.integracion.SistemaExternoAuthResponse;
+import com.upb.ecommerce.core.integracion.SistemaExternoService;
 import com.upb.ecommerce.core.service.UsuarioService;
 import com.upb.ecommerce.domain.entities.Usuario;
 import jakarta.validation.Valid;
@@ -17,10 +21,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -41,6 +48,8 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final UsuarioService usuarioService;
     private final AuthenticationManager authenticationManager;
+    private final TokenBlacklist tokenBlacklist;
+    private final SistemaExternoService sistemaExternoService;
 
     @PostMapping
     public ResponseEntity<LoginResponse> token(@Valid @RequestBody LoginRequest data) {
@@ -53,6 +62,45 @@ public class AuthController {
         } catch (Exception e) {
             log.error("Error al autenticar el usuario {}", data.getEmail(), e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al autenticar");
+        }
+    }
+
+    /**
+     * Cierra la sesión del usuario: invalida el JWT actual añadiéndolo a la lista
+     * negra hasta su expiración. Requiere enviar el token en {@code Authorization}.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = jwtTokenProvider.resolveToken(authHeader);
+        if (token != null) {
+            try {
+                Date expiration = jwtTokenProvider.getExpiration(token);
+                tokenBlacklist.add(token, expiration.getTime());
+                log.info("Sesión cerrada — token invalidado hasta {}", expiration);
+            } catch (Exception e) {
+                // Token ya inválido o expirado: nada que invalidar
+                log.warn("Logout con token no válido: {}", e.getMessage());
+            }
+        }
+        SecurityContextHolder.clearContext();
+        return ok(Map.of("message", "Sesión cerrada correctamente"));
+    }
+
+    /**
+     * Autentica contra el sistema ecommerce externo (par) y devuelve su token.
+     * El token queda cacheado en {@link SistemaExternoService} para las siguientes
+     * llamadas de integración.
+     */
+    @PostMapping("/externo")
+    public ResponseEntity<SistemaExternoAuthResponse> authExterno(
+            @RequestBody SistemaExternoAuthRequest request) {
+        try {
+            return ok(sistemaExternoService.auth(request));
+        } catch (Exception e) {
+            log.error("Error autenticando contra el sistema externo", e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                    "No se pudo autenticar contra el sistema externo");
         }
     }
 

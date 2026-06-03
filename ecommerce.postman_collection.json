@@ -1,0 +1,696 @@
+{
+  "info": {
+    "name": "Ecommerce UPB - API",
+    "description": "Coleccion completa de la API multi-tienda (Spring Boot, puerto 8081).\n\nFlujo recomendado:\n1. Carpeta '00 - Auth' -> 'Login Admin' (guarda el JWT en la variable {{token}} automaticamente).\n2. El resto de requests usan {{token}} via Bearer heredado.\n\nVariables de coleccion:\n- baseUrl: http://localhost:8081\n- token: se setea solo al hacer login.\n\nDatos reales sembrados en la BD: tienda 1 (comercio1), admin id=1, cliente id=2, categoria 1, producto 1, etc.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "00 - Auth",
+      "item": [
+        {
+          "name": "Login Admin (guarda token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.access_token) {",
+                  "    pm.collectionVariables.set('token', json.access_token);",
+                  "    console.log('Token guardado');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"email\": \"admin@comercio1.com\",\n  \"password\": \"Admin123**\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth", "host": ["{{baseUrl}}"], "path": ["api", "auth"] },
+            "description": "Login del admin sembrado. Guarda access_token en {{token}}."
+          }
+        },
+        {
+          "name": "Login Cliente (guarda token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.access_token) {",
+                  "    pm.collectionVariables.set('token', json.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"email\": \"cliente@comercio1.com\",\n  \"password\": \"REEMPLAZA_CON_LA_PASSWORD_DEL_CLIENTE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth", "host": ["{{baseUrl}}"], "path": ["api", "auth"] },
+            "description": "Login del cliente id=2. Si no conoces su password, registra uno nuevo en '02 - Usuarios > Registrar' o usa el token del admin (sirve para todos los endpoints)."
+          }
+        },
+        {
+          "name": "Auth Externo (sistema par)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@comercio1.com\",\n  \"password\": \"Admin123**\",\n  \"tiendaId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/externo", "host": ["{{baseUrl}}"], "path": ["api", "auth", "externo"] },
+            "description": "Autentica contra el ecommerce externo y cachea su token para los endpoints de '11 - Integracion'. Publico."
+          }
+        },
+        {
+          "name": "Logout (cerrar sesion)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] },
+            "description": "Invalida el JWT actual (lista negra). Requiere enviar el token en Authorization."
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Tiendas",
+      "item": [
+        {
+          "name": "Listar tiendas (publico)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/tiendas", "host": ["{{baseUrl}}"], "path": ["api", "tiendas"] }
+          }
+        },
+        {
+          "name": "Obtener tienda por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/tiendas/1", "host": ["{{baseUrl}}"], "path": ["api", "tiendas", "1"] }
+          }
+        },
+        {
+          "name": "Obtener tienda por slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/tiendas/slug/comercio1", "host": ["{{baseUrl}}"], "path": ["api", "tiendas", "slug", "comercio1"] }
+          }
+        },
+        {
+          "name": "Crear tienda (publico)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Comercio2 Moda\",\n  \"slug\": \"comercio2\",\n  \"telefonoContacto\": \"77754321\",\n  \"emailContacto\": \"contacto@comercio2.com\",\n  \"logoUrl\": \"https://ejemplo.com/logo2.png\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/tiendas", "host": ["{{baseUrl}}"], "path": ["api", "tiendas"] }
+          }
+        },
+        {
+          "name": "Actualizar tienda (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Comercio1 Inventario General (editado)\",\n  \"slug\": \"comercio1\",\n  \"telefonoContacto\": \"77712345\",\n  \"emailContacto\": \"contacto@comercio1.com\",\n  \"logoUrl\": \"https://ejemplo.com/logo1.png\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/tiendas/1", "host": ["{{baseUrl}}"], "path": ["api", "tiendas", "1"] }
+          }
+        },
+        {
+          "name": "Desactivar tienda (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/tiendas/2", "host": ["{{baseUrl}}"], "path": ["api", "tiendas", "2"] },
+            "description": "Soft-delete. Usa el id de una tienda de prueba (ej. 2), no la 1."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Usuarios",
+      "item": [
+        {
+          "name": "Registrar usuario (publico, crea CLIENTE)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Carlos Mendoza\",\n  \"email\": \"carlos@comercio1.com\",\n  \"password\": \"Cliente123**\",\n  \"rol\": \"CLIENTE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/usuarios/registrar", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "registrar"] },
+            "description": "El rol enviado se ignora por seguridad: el auto-registro publico SIEMPRE crea CLIENTE."
+          }
+        },
+        {
+          "name": "Listar usuarios por tienda (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/usuarios/tienda/1", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "tienda", "1"] }
+          }
+        },
+        {
+          "name": "Obtener usuario por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/usuarios/2", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "2"] }
+          }
+        },
+        {
+          "name": "Actualizar usuario",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Ana Garcia Lopez\",\n  \"email\": \"cliente@comercio1.com\",\n  \"password\": \"\",\n  \"rol\": \"CLIENTE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/usuarios/2", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "2"] },
+            "description": "password vacio = no se cambia. Solo se actualizan nombre y (si viene) password."
+          }
+        },
+        {
+          "name": "Desactivar usuario (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/usuarios/3", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "3"] },
+            "description": "Soft-delete. Usa un usuario de prueba (ej. el id 3 creado en Registrar)."
+          }
+        },
+        {
+          "name": "Reactivar usuario (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/usuarios/3/reactivar", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "3", "reactivar"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Categorias",
+      "item": [
+        {
+          "name": "Listar categorias por tienda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/categorias/tienda/1", "host": ["{{baseUrl}}"], "path": ["api", "categorias", "tienda", "1"] }
+          }
+        },
+        {
+          "name": "Crear categoria (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Accesorios\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/categorias", "host": ["{{baseUrl}}"], "path": ["api", "categorias"] }
+          }
+        },
+        {
+          "name": "Actualizar categoria (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Electronica y Gadgets\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/categorias/1", "host": ["{{baseUrl}}"], "path": ["api", "categorias", "1"] }
+          }
+        },
+        {
+          "name": "Eliminar categoria (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/categorias/2", "host": ["{{baseUrl}}"], "path": ["api", "categorias", "2"] },
+            "description": "Usa una categoria de prueba (ej. 2)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Productos",
+      "item": [
+        {
+          "name": "Listar productos por tienda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/productos/tienda/1", "host": ["{{baseUrl}}"], "path": ["api", "productos", "tienda", "1"] }
+          }
+        },
+        {
+          "name": "Listar productos por categoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/productos/tienda/1/categoria/1", "host": ["{{baseUrl}}"], "path": ["api", "productos", "tienda", "1", "categoria", "1"] }
+          }
+        },
+        {
+          "name": "Obtener producto por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/productos/tienda/1/1", "host": ["{{baseUrl}}"], "path": ["api", "productos", "tienda", "1", "1"] }
+          }
+        },
+        {
+          "name": "Crear producto (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"categoriaId\": 1,\n  \"nombre\": \"Auriculares Pro Bass\",\n  \"slugProducto\": \"auriculares-pro-bass\",\n  \"descripcionLarga\": \"Auriculares inalambricos con cancelacion de ruido\",\n  \"precio\": 299.90,\n  \"precioCosto\": 150.00,\n  \"stock\": 100,\n  \"stockMinimo\": 10,\n  \"imagenUrl\": \"https://ejemplo.com/auriculares.png\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/productos", "host": ["{{baseUrl}}"], "path": ["api", "productos"] }
+          }
+        },
+        {
+          "name": "Actualizar producto (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"categoriaId\": 1,\n  \"nombre\": \"Smartphone Galaxy X10 Pro\",\n  \"slugProducto\": \"smartphone-galaxy-x10\",\n  \"descripcionLarga\": \"Version actualizada con mas memoria\",\n  \"precio\": 1699.99,\n  \"precioCosto\": 1100.00,\n  \"stock\": 49,\n  \"stockMinimo\": 5,\n  \"imagenUrl\": \"https://ejemplo.com/galaxy.png\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/productos/1", "host": ["{{baseUrl}}"], "path": ["api", "productos", "1"] }
+          }
+        },
+        {
+          "name": "Eliminar producto (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/productos/tienda/1/2", "host": ["{{baseUrl}}"], "path": ["api", "productos", "tienda", "1", "2"] },
+            "description": "Usa un producto de prueba (ej. 2)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Atributos de Producto",
+      "item": [
+        {
+          "name": "Listar atributos por producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/atributos/producto/1", "host": ["{{baseUrl}}"], "path": ["api", "atributos", "producto", "1"] }
+          }
+        },
+        {
+          "name": "Agregar atributo (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": 1,\n  \"nombre\": \"Almacenamiento\",\n  \"valor\": \"256GB\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/atributos", "host": ["{{baseUrl}}"], "path": ["api", "atributos"] }
+          }
+        },
+        {
+          "name": "Actualizar atributo (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": 1,\n  \"nombre\": \"Color\",\n  \"valor\": \"Azul Profundo\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/atributos/1", "host": ["{{baseUrl}}"], "path": ["api", "atributos", "1"] }
+          }
+        },
+        {
+          "name": "Eliminar atributo (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/atributos/2", "host": ["{{baseUrl}}"], "path": ["api", "atributos", "2"] },
+            "description": "Usa un atributo de prueba (ej. 2)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Direcciones de Envio",
+      "item": [
+        {
+          "name": "Listar direcciones por usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/direcciones/usuario/2", "host": ["{{baseUrl}}"], "path": ["api", "direcciones", "usuario", "2"] }
+          }
+        },
+        {
+          "name": "Obtener direccion por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/direcciones/1", "host": ["{{baseUrl}}"], "path": ["api", "direcciones", "1"] }
+          }
+        },
+        {
+          "name": "Crear direccion",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": 2,\n  \"direccionCalle\": \"Calle Jordan #567\",\n  \"ciudad\": \"Cochabamba\",\n  \"referencias\": \"Frente a la plaza principal\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/direcciones", "host": ["{{baseUrl}}"], "path": ["api", "direcciones"] }
+          }
+        },
+        {
+          "name": "Actualizar direccion",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": 2,\n  \"direccionCalle\": \"Av. Ballivian #1234, Zona Sur (actualizada)\",\n  \"ciudad\": \"Cochabamba\",\n  \"referencias\": \"Edificio azul, piso 3\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/direcciones/1", "host": ["{{baseUrl}}"], "path": ["api", "direcciones", "1"] }
+          }
+        },
+        {
+          "name": "Eliminar direccion",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/direcciones/2", "host": ["{{baseUrl}}"], "path": ["api", "direcciones", "2"] },
+            "description": "Usa una direccion de prueba (ej. 2)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Carrito",
+      "item": [
+        {
+          "name": "Obtener carrito activo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/carrito/tienda/1/usuario/2", "host": ["{{baseUrl}}"], "path": ["api", "carrito", "tienda", "1", "usuario", "2"] }
+          }
+        },
+        {
+          "name": "Agregar item al carrito",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"usuarioId\": 2,\n  \"productoId\": 1,\n  \"cantidad\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/carrito/agregar", "host": ["{{baseUrl}}"], "path": ["api", "carrito", "agregar"] },
+            "description": "Si no existe carrito ACTIVO para el usuario, lo crea. Si el producto ya esta, suma cantidad."
+          }
+        },
+        {
+          "name": "Eliminar item del carrito",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/carrito/1/item/1", "host": ["{{baseUrl}}"], "path": ["api", "carrito", "1", "item", "1"] },
+            "description": "carritoId=1, detalleId=1."
+          }
+        },
+        {
+          "name": "Vaciar carrito",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/carrito/1/vaciar", "host": ["{{baseUrl}}"], "path": ["api", "carrito", "1", "vaciar"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Pedidos",
+      "item": [
+        {
+          "name": "Listar pedidos por usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/pedidos/tienda/1/usuario/2", "host": ["{{baseUrl}}"], "path": ["api", "pedidos", "tienda", "1", "usuario", "2"] }
+          }
+        },
+        {
+          "name": "Obtener pedido por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/pedidos/tienda/1/1", "host": ["{{baseUrl}}"], "path": ["api", "pedidos", "tienda", "1", "1"] }
+          }
+        },
+        {
+          "name": "Crear pedido desde carrito",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"usuarioId\": 2,\n  \"direccionId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/pedidos", "host": ["{{baseUrl}}"], "path": ["api", "pedidos"] },
+            "description": "Requiere un carrito ACTIVO con items para el usuario. Descuenta stock y convierte el carrito. direccionId es opcional."
+          }
+        },
+        {
+          "name": "Actualizar estado del pedido (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/tienda/1/1/estado?estado=PREPARANDO",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pedidos", "tienda", "1", "1", "estado"],
+              "query": [ { "key": "estado", "value": "PREPARANDO" } ]
+            },
+            "description": "Estados validos: PENDIENTE, PAGADO, PREPARANDO, ENVIADO, ENTREGADO, CANCELADO."
+          }
+        },
+        {
+          "name": "Cancelar pedido (repone stock)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/pedidos/tienda/1/1/cancelar", "host": ["{{baseUrl}}"], "path": ["api", "pedidos", "tienda", "1", "1", "cancelar"] },
+            "description": "No permite cancelar pedidos ENVIADO/ENTREGADO/CANCELADO."
+          }
+        },
+        {
+          "name": "Generar QR de pago (Stereum)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"BO\",\n  \"currency\": \"BOB\",\n  \"network\": \"CSL\",\n  \"documentNumber\": \"76887344\",\n  \"reservationValidityTime\": \"10\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/pedidos/tienda/1/1/qr", "host": ["{{baseUrl}}"], "path": ["api", "pedidos", "tienda", "1", "1", "qr"] },
+            "description": "El monto se toma del total del pedido. El body es opcional (tiene defaults BO/BOB/CSL). Para cripto usa currency USDT y network POLYGON."
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Pagos",
+      "item": [
+        {
+          "name": "Listar pagos por pedido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/pagos/pedido/1", "host": ["{{baseUrl}}"], "path": ["api", "pagos", "pedido", "1"] }
+          }
+        },
+        {
+          "name": "Registrar pago",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedidoId\": 1,\n  \"metodo\": \"QR\",\n  \"transaccionPasarelaId\": \"STEREUM-TX-0001\",\n  \"monto\": 1599.99\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/pagos", "host": ["{{baseUrl}}"], "path": ["api", "pagos"] },
+            "description": "El monto DEBE coincidir exactamente con el total del pedido (pedido 1 = 1599.99). Marca el pedido como PAGADO."
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Inventario (ADMIN)",
+      "item": [
+        {
+          "name": "Listar movimientos por tienda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/inventario/tienda/1", "host": ["{{baseUrl}}"], "path": ["api", "inventario", "tienda", "1"] }
+          }
+        },
+        {
+          "name": "Listar movimientos por producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/inventario/producto/1", "host": ["{{baseUrl}}"], "path": ["api", "inventario", "producto", "1"] }
+          }
+        },
+        {
+          "name": "Registrar movimiento",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"productoId\": 1,\n  \"usuarioId\": 1,\n  \"tipo\": \"ENTRADA\",\n  \"cantidad\": 25,\n  \"referencia\": \"Reposicion de stock proveedor\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/inventario", "host": ["{{baseUrl}}"], "path": ["api", "inventario"] },
+            "description": "tipo: ENTRADA o SALIDA. usuarioId es opcional."
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Integracion (ADMIN)",
+      "item": [
+        {
+          "name": "Externo - Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/integracion/externo/usuarios/1", "host": ["{{baseUrl}}"], "path": ["api", "integracion", "externo", "usuarios", "1"] },
+            "description": "Requiere haber llamado antes 'Auth Externo'. Consume el ecommerce par."
+          }
+        },
+        {
+          "name": "Externo - Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Usuario Externo Demo\",\n  \"email\": \"externo.demo@comercio1.com\",\n  \"password\": \"Demo123**\",\n  \"rol\": \"CLIENTE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/integracion/externo/usuarios", "host": ["{{baseUrl}}"], "path": ["api", "integracion", "externo", "usuarios"] }
+          }
+        },
+        {
+          "name": "Externo - Listar tiendas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/integracion/externo/tiendas", "host": ["{{baseUrl}}"], "path": ["api", "integracion", "externo", "tiendas"] }
+          }
+        },
+        {
+          "name": "Externo - Crear tienda",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Tienda Externa Demo\",\n  \"slug\": \"tienda-externa-demo\",\n  \"telefonoContacto\": \"77700000\",\n  \"emailContacto\": \"externa@demo.com\",\n  \"logoUrl\": \"https://ejemplo.com/externa.png\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/integracion/externo/tiendas", "host": ["{{baseUrl}}"], "path": ["api", "integracion", "externo", "tiendas"] }
+          }
+        },
+        {
+          "name": "Stereum - Crear cargo (QR generico)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"BO\",\n  \"amount\": \"100\",\n  \"currency\": \"USDT\",\n  \"network\": \"POLYGON\",\n  \"chargeReason\": \"Compra de prueba\",\n  \"reservationValidityTime\": \"10\",\n  \"customer\": {\n    \"name\": \"Ricardo\",\n    \"lastname\": \"Laredo\",\n    \"document_number\": \"76887344\",\n    \"email\": \"ricardo@demo.com\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/integracion/stereum/cargo", "host": ["{{baseUrl}}"], "path": ["api", "integracion", "stereum", "cargo"] },
+            "description": "Genera un QR de cobro generico (no ligado a un pedido). Devuelve qr_base64 y payment_link."
+          }
+        }
+      ]
+    }
+  ]
+}

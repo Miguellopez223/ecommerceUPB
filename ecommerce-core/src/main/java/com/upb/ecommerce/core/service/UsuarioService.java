@@ -8,6 +8,7 @@ import com.upb.ecommerce.data.repository.TiendaRepository;
 import com.upb.ecommerce.data.repository.UsuarioRepository;
 import com.upb.ecommerce.domain.entities.Tienda;
 import com.upb.ecommerce.domain.entities.Usuario;
+import com.upb.ecommerce.domain.enums.RolType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,14 +52,15 @@ public class UsuarioService {
         if (usuarioRepository.findByEmailAndTiendaId(request.getEmail(), tienda.getId()).isPresent()) {
             throw new RuntimeException("Ya existe un usuario con ese email en esta tienda");
         }
-        // La validación del rol ya no es necesaria — el enum RolType lo restringe automáticamente
 
         Usuario usuario = new Usuario();
         usuario.setTienda(tienda);
         usuario.setNombre(request.getNombre());
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-        usuario.setRol(request.getRol());
+        // Seguridad: el auto-registro es público, por lo que SIEMPRE se crea como
+        // CLIENTE para evitar escalada de privilegios a ADMIN desde el endpoint abierto.
+        usuario.setRol(RolType.CLIENTE);
         return UsuarioResponse.fromEntity(usuarioRepository.save(usuario));
     }
 
@@ -113,5 +115,13 @@ public class UsuarioService {
                 .orElseThrow(() -> new NotDataFoundException("Usuario no encontrado"));
         usuario.setEstado(false);
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public UsuarioResponse reactivar(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new NotDataFoundException("Usuario no encontrado"));
+        usuario.setEstado(true);
+        return UsuarioResponse.fromEntity(usuarioRepository.save(usuario));
     }
 }

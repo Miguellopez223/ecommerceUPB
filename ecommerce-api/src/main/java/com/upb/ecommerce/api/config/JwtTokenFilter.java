@@ -26,6 +26,7 @@ import java.util.Optional;
 public class JwtTokenFilter extends OncePerRequestFilter implements Serializable {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklist tokenBlacklist;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -36,6 +37,13 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
             String token = jwtTokenProvider.resolveToken(request.getHeader("Authorization"));
             if (token == null) {
                 filterChain.doFilter(request, response);
+                return;
+            }
+
+            // Token invalidado por logout — se rechaza aunque siga vigente
+            if (tokenBlacklist.contains(token)) {
+                log.warn("Token presente en la lista negra (sesión cerrada) — devolviendo 401");
+                writeUnauthorized(response);
                 return;
             }
 

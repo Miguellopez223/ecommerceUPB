@@ -1,7 +1,12 @@
 package com.upb.ecommerce.core.service;
 
 import com.upb.ecommerce.core.dto.request.CrearPedidoRequest;
+import com.upb.ecommerce.core.dto.request.GenerarQrRequest;
 import com.upb.ecommerce.core.dto.response.PedidoResponse;
+import com.upb.ecommerce.core.integracion.StereumCreateChargeRequest;
+import com.upb.ecommerce.core.integracion.StereumCreateChargeResponse;
+import com.upb.ecommerce.core.integracion.StereumCustomer;
+import com.upb.ecommerce.core.integracion.StereumService;
 import com.upb.ecommerce.data.repository.*;
 import com.upb.ecommerce.domain.entities.*;
 import org.springframework.stereotype.Service;
@@ -22,6 +27,7 @@ public class PedidoService {
     private final UsuarioRepository usuarioRepository;
     private final MovimientoInventarioRepository movimientoRepository;
     private final DireccionEnvioRepository direccionRepository;
+    private final StereumService stereumService;
 
     public PedidoService(PedidoRepository pedidoRepository,
                          CarritoRepository carritoRepository,
@@ -29,7 +35,8 @@ public class PedidoService {
                          TiendaRepository tiendaRepository,
                          UsuarioRepository usuarioRepository,
                          MovimientoInventarioRepository movimientoRepository,
-                         DireccionEnvioRepository direccionRepository) {
+                         DireccionEnvioRepository direccionRepository,
+                         StereumService stereumService) {
         this.pedidoRepository = pedidoRepository;
         this.carritoRepository = carritoRepository;
         this.productoRepository = productoRepository;
@@ -37,6 +44,7 @@ public class PedidoService {
         this.usuarioRepository = usuarioRepository;
         this.movimientoRepository = movimientoRepository;
         this.direccionRepository = direccionRepository;
+        this.stereumService = stereumService;
     }
 
     public List<PedidoResponse> listarPorUsuario(Long tiendaId, Long usuarioId) {
@@ -125,5 +133,81 @@ public class PedidoService {
         }
         pedido.setEstadoPedido(nuevoEstado);
         return PedidoResponse.fromEntity(pedidoRepository.save(pedido));
+    }
+
+    /**
+     * Cancela un pedido: repone el stock de cada producto, registra los movimientos
+     * de ENTRADA correspondientes y deja el pedido en estado CANCELADO.
+     * No se permite cancelar pedidos ya ENVIADO/ENTREGADO/CANCELADO.
+     */
+    @Transactional
+    public PedidoResponse cancelarPedido(Long tiendaId, Long pedidoId) {
+        Pedido pedido = pedidoRepository.findByIdAndTiendaId(pedidoId, tiendaId)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        String estado = pedido.getEstadoPedido();
+        if ("CANCELADO".equals(estado)) {
+            throw new RuntimeException("El pedido ya está cancelado");
+        }
+        if ("ENVIADO".equals(estado) || "ENTREGADO".equals(estado)) {
+            throw new RuntimeException("No se puede cancelar un pedido en estado " + estado);
+        }
+
+        if (pedido.getDetalles() != null) {
+            for (DetallePedido dp : pedido.getDetalles()) {
+                Producto producto = dp.getProducto();
+                producto.setStock(producto.getStock() + dp.getCantidad());
+                productoRepository.save(producto);
+
+                MovimientoInventario mov = new MovimientoInventario();
+                mov.setTienda(pedido.getTienda());
+                mov.setProducto(producto);
+                mov.setTipo("ENTRADA");
+                mov.setCantidad(dp.getCantidad());
+                mov.setReferencia("Cancelación pedido " + pedido.getCodigoSeguimiento());
+                movimientoRepository.save(mov);
+            }
+        }
+
+        pedido.setEstadoPedido("CANCELADO");
+        return PedidoResponse.fromEntity(pedidoRepository.save(pedido));
+    }
+
+    /**
+     * Genera un QR de pago (Stereum) para un pedido. El monto se toma del total del
+     * pedido. Lanza {@code Exception} si Stereum falla (la maneja el controlador).
+     */
+    @Transactional(readOnly = true)
+    public StereumCreateChargeResponse generarQrPago(Long tiendaId, Long pedidoId,
+                                                     GenerarQrRequest req) throws Exception {
+        Pedido pedido = pedidoRepository.findByIdAndTiendaId(pedidoId, tiendaId)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        if ("CANCELADO".equals(pedido.getEstadoPedido())) {
+            throw new RuntimeException("No se puede cobrar un pedido cancelado");
+        }
+        if ("PAGADO".equals(pedido.getEstadoPedido())) {
+            throw new RuntimeException("El pedido ya fue pagado");
+        }
+
+        Usuario usuario = pedido.getUsuario();
+        StereumCustomer customer = StereumCustomer.builder()
+                .name(usuario.getNombre())
+                .lastname(".")
+                .documentNumber(req.getDocumentNumber() != null ? req.getDocumentNumber() : "0000000")
+                .email(usuario.getEmail())
+                .build();
+
+        StereumCreateChargeRequest charge = StereumCreateChargeRequest.builder()
+                .country(req.getCountry())
+                .amount(pedido.getTotal().toPlainString())
+                .currency(req.getCurrency())
+                .network(req.getNetwork())
+                .chargeReason("Pago pedido " + pedido.getCodigoSeguimiento())
+                .reservationValidityTime(req.getReservationValidityTime())
+                .customer(customer)
+                .build();
+
+        return stereumService.crearCargo(charge);
     }
 }

@@ -6,6 +6,7 @@ import com.upb.ecommerce.core.service.AtributoProductoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,17 +26,20 @@ public class AtributoProductoController {
         return ResponseEntity.ok(atributoService.listarPorProducto(productoId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<AtributoProductoResponse> agregar(@Valid @RequestBody AtributoProductoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(atributoService.agregar(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<AtributoProductoResponse> actualizar(@PathVariable Long id,
                                                                @Valid @RequestBody AtributoProductoRequest request) {
         return ResponseEntity.ok(atributoService.actualizar(id, request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         atributoService.eliminar(id);

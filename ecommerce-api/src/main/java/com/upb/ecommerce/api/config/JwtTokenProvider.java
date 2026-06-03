@@ -75,6 +75,20 @@ public class JwtTokenProvider implements Serializable {
         return null;
     }
 
+    /**
+     * Extrae la fecha de expiración de un token válido. Usado por el logout para
+     * saber hasta cuándo mantener el token en la lista negra.
+     */
+    public Date getExpiration(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(secretKeyBytes);
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration();
+    }
+
     public Optional<Authentication> validateToken(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(secretKeyBytes);

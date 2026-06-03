@@ -6,12 +6,14 @@ import com.upb.ecommerce.core.service.MovimientoInventarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/inventario")
+@PreAuthorize("hasRole('ADMIN')")
 public class MovimientoInventarioController {
 
     private final MovimientoInventarioService movimientoService;

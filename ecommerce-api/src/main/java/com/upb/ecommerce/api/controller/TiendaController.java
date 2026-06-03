@@ -6,6 +6,7 @@ import com.upb.ecommerce.core.service.TiendaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,12 +41,14 @@ public class TiendaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(tiendaService.crear(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<TiendaResponse> actualizar(@PathVariable Long id,
                                                      @Valid @RequestBody TiendaRequest request) {
         return ResponseEntity.ok(tiendaService.actualizar(id, request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> desactivar(@PathVariable Long id) {
         tiendaService.desactivar(id);

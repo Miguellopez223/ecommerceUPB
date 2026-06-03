@@ -6,6 +6,7 @@ import com.upb.ecommerce.core.service.ProductoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,17 +38,20 @@ public class ProductoController {
         return ResponseEntity.ok(productoService.obtenerPorId(tiendaId, productoId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProductoResponse> crear(@Valid @RequestBody ProductoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productoService.crear(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ProductoResponse> actualizar(@PathVariable Long id,
                                                        @Valid @RequestBody ProductoRequest request) {
         return ResponseEntity.ok(productoService.actualizar(id, request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/tienda/{tiendaId}/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long tiendaId, @PathVariable Long id) {
         productoService.eliminar(tiendaId, id);

@@ -33,4 +33,9 @@ public class CarritoController {
                                                         @PathVariable Long detalleId) {
         return ResponseEntity.ok(carritoService.eliminarItem(carritoId, detalleId));
     }
+
+    @DeleteMapping("/{carritoId}/vaciar")
+    public ResponseEntity<CarritoResponse> vaciar(@PathVariable Long carritoId) {
+        return ResponseEntity.ok(carritoService.vaciarCarrito(carritoId));
+    }
 }

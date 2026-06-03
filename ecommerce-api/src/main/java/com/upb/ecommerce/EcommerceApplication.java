@@ -67,7 +67,7 @@ public class EcommerceApplication implements CommandLineRunner {
         try {
             StereumCreateChargeRequest cargo = StereumCreateChargeRequest.builder()
                     .country("BO")
-                    .amount("100")
+                    .amount("101")
                     .currency("USDT")
                     .network("POLYGON")
                     .chargeReason("Compra de prueba")

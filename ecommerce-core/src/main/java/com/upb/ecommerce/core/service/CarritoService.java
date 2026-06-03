@@ -96,6 +96,18 @@ public class CarritoService {
         return CarritoResponse.fromEntity(carritoRepository.findById(cid).orElseThrow());
     }
 
+    @Transactional
+    public CarritoResponse vaciarCarrito(Long carritoId) {
+        Carrito carrito = carritoRepository.findById(carritoId)
+                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
+        if (carrito.getDetalles() != null && !carrito.getDetalles().isEmpty()) {
+            detalleCarritoRepository.deleteAll(carrito.getDetalles());
+            carrito.getDetalles().clear();
+        }
+        carrito.setTotalEstimado(BigDecimal.ZERO);
+        return CarritoResponse.fromEntity(carritoRepository.save(carrito));
+    }
+
     private void recalcularTotal(Long carritoId) {
         Carrito fresh = carritoRepository.findById(carritoId).orElseThrow();
         BigDecimal total = BigDecimal.ZERO;
