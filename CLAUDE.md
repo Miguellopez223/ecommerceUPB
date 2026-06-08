@@ -77,6 +77,8 @@ JWT-based stateless authentication. Login flow:
 2. Subsequent requests include `Authorization: Bearer <token>`
 3. `JwtTokenFilter` validates the token and sets `UsuarioPrincipal` in SecurityContext
 
+**Logout:** `POST /api/auth/logout` adds the current token to `TokenBlacklist` (an in-memory denylist keyed by token → expiration) until it would naturally expire — needed because JWTs are otherwise stateless and remain cryptographically valid until expiry. `JwtTokenFilter` rejects any request whose token is blacklisted.
+
 **Public endpoints (no JWT required):**
 - `POST /api/auth` — login
 - `POST /api/auth/externo` — authenticate against the external system

@@ -27,6 +27,7 @@ public class PedidoService {
     private final UsuarioRepository usuarioRepository;
     private final MovimientoInventarioRepository movimientoRepository;
     private final DireccionEnvioRepository direccionRepository;
+    private final PagoRepository pagoRepository;
     private final StereumService stereumService;
 
     public PedidoService(PedidoRepository pedidoRepository,
@@ -36,6 +37,7 @@ public class PedidoService {
                          UsuarioRepository usuarioRepository,
                          MovimientoInventarioRepository movimientoRepository,
                          DireccionEnvioRepository direccionRepository,
+                         PagoRepository pagoRepository,
                          StereumService stereumService) {
         this.pedidoRepository = pedidoRepository;
         this.carritoRepository = carritoRepository;
@@ -44,6 +46,7 @@ public class PedidoService {
         this.usuarioRepository = usuarioRepository;
         this.movimientoRepository = movimientoRepository;
         this.direccionRepository = direccionRepository;
+        this.pagoRepository = pagoRepository;
         this.stereumService = stereumService;
     }
 
@@ -176,8 +179,13 @@ public class PedidoService {
     /**
      * Genera un QR de pago (Stereum) para un pedido. El monto se toma del total del
      * pedido. Lanza {@code Exception} si Stereum falla (la maneja el controlador).
+     *
+     * <p>Tras crear el cargo en Stereum se persiste un {@link Pago} en estado PENDIENTE
+     * guardando el id de transacción de Stereum en {@code transaccionPasarelaId}. Ese id
+     * es la clave que permite, cuando llegue el webhook de confirmación, encontrar este
+     * pago y marcarlo como pagado.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public StereumCreateChargeResponse generarQrPago(Long tiendaId, Long pedidoId,
                                                      GenerarQrRequest req) throws Exception {
         Pedido pedido = pedidoRepository.findByIdAndTiendaId(pedidoId, tiendaId)
@@ -208,6 +216,18 @@ public class PedidoService {
                 .customer(customer)
                 .build();
 
-        return stereumService.crearCargo(charge);
+        StereumCreateChargeResponse response = stereumService.crearCargo(charge);
+
+        // Registramos el pago como PENDIENTE con el id de Stereum, para poder
+        // reconciliarlo cuando llegue la notificación del webhook.
+        Pago pago = new Pago();
+        pago.setPedido(pedido);
+        pago.setMetodo("QR");
+        pago.setTransaccionPasarelaId(response.getId());
+        pago.setMonto(pedido.getTotal());
+        pago.setEstadoPago("PENDIENTE");
+        pagoRepository.save(pago);
+
+        return response;
     }
 }
