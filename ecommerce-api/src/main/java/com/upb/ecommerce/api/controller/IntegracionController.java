@@ -3,6 +3,7 @@ package com.upb.ecommerce.api.controller;
 import com.upb.ecommerce.core.integracion.StereumCreateChargeRequest;
 import com.upb.ecommerce.core.integracion.StereumCreateChargeResponse;
 import com.upb.ecommerce.core.integracion.StereumService;
+import com.upb.ecommerce.core.integracion.StereumServiceJson;
 import com.upb.ecommerce.core.integracion.SistemaExternoService;
 import com.upb.ecommerce.core.integracion.TiendaExternoRequest;
 import com.upb.ecommerce.core.integracion.TiendaExternoResponse;
@@ -39,6 +40,7 @@ public class IntegracionController {
 
     private final SistemaExternoService sistemaExternoService;
     private final StereumService stereumService;
+    private final StereumServiceJson stereumServiceJson;
 
     // --- Sistema externo: usuarios ------------------------------------------
 
@@ -94,6 +96,21 @@ public class IntegracionController {
                     .body(stereumService.crearCargo(request));
         } catch (Exception e) {
             throw badGateway("generar el cobro en Stereum", e);
+        }
+    }
+
+    /**
+     * Igual que {@code /stereum/cargo} pero usando {@link StereumServiceJson}, que arma y
+     * parsea el JSON a mano con {@code JSONObject} (ejercicio de la tecnica del docente).
+     */
+    @PostMapping("/stereum/cargo-json")
+    public ResponseEntity<StereumCreateChargeResponse> crearCargoStereumJson(
+            @Valid @RequestBody StereumCreateChargeRequest request) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(stereumServiceJson.crearCargo(request));
+        } catch (Exception e) {
+            throw badGateway("generar el cobro en Stereum (JSONObject)", e);
         }
     }
 

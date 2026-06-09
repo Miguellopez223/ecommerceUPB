@@ -1508,6 +1508,40 @@
             },
             "description": "Genera un QR de cobro generico (no ligado a un pedido). Devuelve qr_base64 y payment_link."
           }
+        },
+        {
+          "name": "Stereum - Crear cargo (JSONObject)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"BO\",\n  \"amount\": \"100\",\n  \"currency\": \"USDT\",\n  \"network\": \"POLYGON\",\n  \"charge_reason\": \"Compra de prueba (JSONObject)\",\n  \"reservation_validity_time\": \"10\",\n  \"customer\": {\n    \"name\": \"Ricardo\",\n    \"lastname\": \"Laredo\",\n    \"document_number\": \"76887344\",\n    \"email\": \"ricardo@demo.com\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/integracion/stereum/cargo-json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "integracion",
+                "stereum",
+                "cargo-json"
+              ]
+            },
+            "description": "Igual que 'Crear cargo' pero el backend arma y parsea el JSON a mano con JSONObject (StereumServiceJson). Mismo resultado, distinta tecnica."
+          }
         }
       ]
     },
