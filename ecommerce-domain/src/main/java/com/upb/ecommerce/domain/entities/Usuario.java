@@ -40,6 +40,18 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, length = 50)
     private RolType rol;
 
+    /** Número de WhatsApp para el cierre conversacional / contacto en el catálogo público. */
+    @Column(name = "numero_whatsapp", length = 30)
+    private String numeroWhatsapp;
+
+    /**
+     * Si el usuario debe mostrarse como contacto en el catálogo público de la tienda.
+     * Nullable a propósito: las filas creadas con el .backup no tienen valor (se tratan
+     * como no visibles).
+     */
+    @Column(name = "visible_catalogo")
+    private Boolean visibleCatalogo = false;
+
     @Column(nullable = false)
     private Boolean estado = true;
 

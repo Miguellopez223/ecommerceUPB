@@ -26,6 +26,10 @@ public class Producto {
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unidad_medida_id")
+    private UnidadMedida unidadMedida;
+
     @Column(nullable = false, length = 200)
     private String nombre;
 

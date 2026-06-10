@@ -40,6 +40,16 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.registrar(request));
     }
 
+    /**
+     * Alta de usuario por un ADMIN: respeta el rol y permite fijar WhatsApp y visibilidad
+     * en el catálogo público. A diferencia de /registrar (público, siempre CLIENTE).
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<UsuarioResponse> crear(@Valid @RequestBody UsuarioRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.crearPorAdmin(request));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponse> actualizar(@PathVariable Long id,
                                                       @Valid @RequestBody UsuarioRequest request) {

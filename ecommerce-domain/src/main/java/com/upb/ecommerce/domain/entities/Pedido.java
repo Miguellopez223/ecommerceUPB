@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -36,6 +37,11 @@ public class Pedido {
 
     @Column(name = "estado_pedido", nullable = false, length = 50)
     private String estadoPedido = "PENDIENTE"; // PENDIENTE, PAGADO, PREPARANDO, ENVIADO, ENTREGADO, CANCELADO
+
+    // Nullable a propósito: los pedidos creados con el .backup no tienen fecha.
+    // Los pedidos nuevos la reciben en la construcción (usada por dashboard y reportes).
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedido> detalles;

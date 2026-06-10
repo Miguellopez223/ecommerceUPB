@@ -84,7 +84,10 @@ JWT-based stateless authentication. Login flow:
 - `POST /api/auth/externo` — authenticate against the external system
 - `POST /api/usuarios/registrar` — register
 - `GET/POST /api/tiendas` — list/create stores
+- `POST /api/webhooks/stereum/outbound` — Stereum webhook (authenticated by HMAC-SHA256, not JWT)
 - `/swagger-ui/**`, `/v3/api-docs/**` — API docs
+
+**Method-level authorization:** `@EnableMethodSecurity` is active. Some endpoints use `@PreAuthorize("hasRole('ADMIN')")` in addition to the filter-chain rules (e.g., `PATCH /api/pedidos/.../estado`, all of `/api/integracion/**`).
 
 All other endpoints require a valid JWT.
 
@@ -98,7 +101,8 @@ Every entity is scoped to a `Tienda` (store). Users, products, orders, carts, an
 - `Usuario` → has `Pedido`, `Carrito`, `DireccionEnvio`
 - `Producto` → has `AtributoProducto` (color, size, etc.)
 - `Carrito` → has `DetalleCarrito` line items; status: ACTIVO / CONVERTIDO_A_PEDIDO / ABANDONADO
-- `Pedido` → has `DetallePedido` line items, `Pago`, linked `DireccionEnvio`; status: PENDIENTE → PAGADO → PREPARANDO → ENVIADO → ENTREGADO / CANCELADO
+- `Pedido` → has `DetallePedido` line items, `Pago`, linked `DireccionEnvio`; status: PENDIENTE → PAGADO → PREPARANDO → ENVIADO → ENTREGADO / CANCELADO. Creating a `Pedido` from a cart automatically decrements product stock and writes `MovimientoInventario` SALIDA records. Cancelling a `Pedido` restores stock and writes ENTRADA records.
+- `Pago` → linked to `Pedido` via FK; `transaccionPasarelaId` stores the Stereum charge id used to reconcile webhook notifications; status: PENDIENTE → EXITOSO / RECHAZADO
 
 ## External System Integration
 
@@ -106,7 +110,15 @@ Every entity is scoped to a `Tienda` (store). Users, products, orders, carts, an
 `SistemaExternoService` in `ecommerce-core` consumes a peer ecommerce instance (configured via `sistema.externo.url` in application.properties). Flow: authenticate first via `POST /api/auth/externo`, which caches the JWT token in-memory, then call endpoints to list/create clients and products on the remote system. Uses Spring's `RestClient`.
 
 ### Stereum API (QR Payment Generation)
-QR code generation for payments is handled via Stereum API (`stereum.url-base` and `stereum.api-key` in application.properties). The integration generates payment QR codes for orders. See relevant endpoints under `Pedido` resource for QR generation details. Stereum API calls use RestClient with configurable timeouts (read-timeout is high at 20s to allow QR generation).
+QR code generation for payments is handled via Stereum API (`stereum.url-base` and `stereum.api-key` in application.properties). Stereum API calls use RestClient with a high read-timeout (20s) to allow QR generation.
+
+**Payment lifecycle:**
+1. `POST /api/pedidos/tienda/{tiendaId}/{pedidoId}/qr` → calls Stereum, creates a `Pago` in state `PENDIENTE` with `transaccionPasarelaId` = Stereum's charge id.
+2. Stereum sends `POST /api/webhooks/stereum/outbound` when the charge state changes.
+3. `StereumWebhookController` verifies the HMAC-SHA256 signature (`x-signature` header, keyed with `stereum.api-key`) and rejects requests older than 5 minutes (`x-timestamp`).
+4. `StereumWebhookService` looks up the `Pago` by `transaccionPasarelaId` and updates: Stereum `PAGADO` → `Pago.estadoPago=EXITOSO` + `Pedido.estadoPedido=PAGADO`; Stereum `CANCELADO/ERROR` → `Pago.estadoPago=RECHAZADO` (pedido stays `PENDIENTE` to allow retry). Processing is idempotent — already-closed payments are ignored.
+
+**Integration endpoints** (`/api/integracion/**`, ADMIN-only): `GET /externo/usuarios/{tiendaId}`, `POST /externo/usuarios`, `GET /externo/tiendas`, `POST /externo/tiendas` proxy to the remote ecommerce peer; `POST /stereum/cargo` creates a generic Stereum charge without tying it to an order.
 
 ## Conventions
 
@@ -127,4 +139,5 @@ QR code generation for payments is handled via Stereum API (`stereum.url-base` a
 - **Database schema validation**: Hibernate ddl-auto is set to `validate`, so the schema must exist before startup. If adding new entities, manually create the table first or temporarily switch to `update` mode.
 - **Per-tienda email uniqueness**: User email addresses are unique per tienda, not globally. Different stores can have users with the same email.
 - **JWT expiration**: Token expiration is set to 480 minutes (8 hours) in application.properties. Tokens will silently fail after expiration; clients must re-login.
+- **External system URL defaults to self**: `sistema.externo.url-base` in application.properties points to `http://localhost:8081` (the same running instance). Change this to the actual peer ecommerce URL before testing the `/api/integracion/externo/**` endpoints.
 - **Lazy loading outside transactions**: If you access lazy-loaded relationships outside a transaction (e.g., in a controller after the service returns), you'll get a LazyInitializationException. Use `@Transactional` on service methods or eagerly fetch in queries.

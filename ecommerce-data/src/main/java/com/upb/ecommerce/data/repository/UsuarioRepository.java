@@ -6,12 +6,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByEmailAndTiendaId(String email, Long tiendaId);
+
+    /** Usuarios visibles como contacto en el catálogo público de la tienda. */
+    List<Usuario> findByTiendaIdAndVisibleCatalogoTrueAndEstadoTrue(Long tiendaId);
 
     /** Usado por UserDetailsService — busca el primer usuario activo con ese email. */
     Optional<Usuario> findFirstByEmailAndEstadoTrue(String email);

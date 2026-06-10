@@ -5,9 +5,11 @@ import com.upb.ecommerce.core.dto.response.ProductoResponse;
 import com.upb.ecommerce.data.repository.CategoriaRepository;
 import com.upb.ecommerce.data.repository.ProductoRepository;
 import com.upb.ecommerce.data.repository.TiendaRepository;
+import com.upb.ecommerce.data.repository.UnidadMedidaRepository;
 import com.upb.ecommerce.domain.entities.Categoria;
 import com.upb.ecommerce.domain.entities.Producto;
 import com.upb.ecommerce.domain.entities.Tienda;
+import com.upb.ecommerce.domain.entities.UnidadMedida;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,13 +21,16 @@ public class ProductoService {
     private final ProductoRepository productoRepository;
     private final TiendaRepository tiendaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final UnidadMedidaRepository unidadMedidaRepository;
 
     public ProductoService(ProductoRepository productoRepository,
                            TiendaRepository tiendaRepository,
-                           CategoriaRepository categoriaRepository) {
+                           CategoriaRepository categoriaRepository,
+                           UnidadMedidaRepository unidadMedidaRepository) {
         this.productoRepository = productoRepository;
         this.tiendaRepository = tiendaRepository;
         this.categoriaRepository = categoriaRepository;
+        this.unidadMedidaRepository = unidadMedidaRepository;
     }
 
     public List<ProductoResponse> listarPorTienda(Long tiendaId) {
@@ -65,6 +70,7 @@ public class ProductoService {
                     .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
             producto.setCategoria(cat);
         }
+        producto.setUnidadMedida(resolverUnidad(request.getUnidadMedidaId()));
         return ProductoResponse.fromEntity(productoRepository.save(producto));
     }
 
@@ -89,7 +95,15 @@ public class ProductoService {
         } else {
             producto.setCategoria(null);
         }
+        producto.setUnidadMedida(resolverUnidad(request.getUnidadMedidaId()));
         return ProductoResponse.fromEntity(productoRepository.save(producto));
+    }
+
+    /** Resuelve la unidad de medida (opcional); null si no se envía. */
+    private UnidadMedida resolverUnidad(Long unidadMedidaId) {
+        if (unidadMedidaId == null) return null;
+        return unidadMedidaRepository.findById(unidadMedidaId)
+                .orElseThrow(() -> new RuntimeException("Unidad de medida no encontrada"));
     }
 
     @Transactional

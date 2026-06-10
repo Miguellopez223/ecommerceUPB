@@ -58,9 +58,36 @@ public class UsuarioService {
         usuario.setNombre(request.getNombre());
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuario.setNumeroWhatsapp(request.getNumeroWhatsapp());
         // Seguridad: el auto-registro es público, por lo que SIEMPRE se crea como
-        // CLIENTE para evitar escalada de privilegios a ADMIN desde el endpoint abierto.
+        // CLIENTE (no visible en catálogo) para evitar escalada de privilegios desde el
+        // endpoint abierto.
         usuario.setRol(RolType.CLIENTE);
+        usuario.setVisibleCatalogo(false);
+        return UsuarioResponse.fromEntity(usuarioRepository.save(usuario));
+    }
+
+    /**
+     * Alta de usuario por un ADMIN: respeta el rol enviado y permite configurar el número
+     * de WhatsApp y la visibilidad en el catálogo público.
+     */
+    @Transactional
+    public UsuarioResponse crearPorAdmin(UsuarioRequest request) {
+        Tienda tienda = tiendaRepository.findById(request.getTiendaId())
+                .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada"));
+
+        if (usuarioRepository.findByEmailAndTiendaId(request.getEmail(), tienda.getId()).isPresent()) {
+            throw new RuntimeException("Ya existe un usuario con ese email en esta tienda");
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setTienda(tienda);
+        usuario.setNombre(request.getNombre());
+        usuario.setEmail(request.getEmail());
+        usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuario.setRol(request.getRol());
+        usuario.setNumeroWhatsapp(request.getNumeroWhatsapp());
+        usuario.setVisibleCatalogo(Boolean.TRUE.equals(request.getVisibleCatalogo()));
         return UsuarioResponse.fromEntity(usuarioRepository.save(usuario));
     }
 
@@ -71,6 +98,10 @@ public class UsuarioService {
         usuario.setNombre(request.getNombre());
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        usuario.setNumeroWhatsapp(request.getNumeroWhatsapp());
+        if (request.getVisibleCatalogo() != null) {
+            usuario.setVisibleCatalogo(request.getVisibleCatalogo());
         }
         return UsuarioResponse.fromEntity(usuarioRepository.save(usuario));
     }

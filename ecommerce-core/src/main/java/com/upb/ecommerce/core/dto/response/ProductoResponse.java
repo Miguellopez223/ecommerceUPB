@@ -12,6 +12,8 @@ public class ProductoResponse {
     private Long tiendaId;
     private Long categoriaId;
     private String categoriaNombre;
+    private Long unidadMedidaId;
+    private String unidadMedidaNombre;
     private String nombre;
     private String slugProducto;
     private String descripcionLarga;
@@ -29,6 +31,10 @@ public class ProductoResponse {
         if (p.getCategoria() != null) {
             r.setCategoriaId(p.getCategoria().getId());
             r.setCategoriaNombre(p.getCategoria().getNombre());
+        }
+        if (p.getUnidadMedida() != null) {
+            r.setUnidadMedidaId(p.getUnidadMedida().getId());
+            r.setUnidadMedidaNombre(p.getUnidadMedida().getNombre());
         }
         r.setNombre(p.getNombre());
         r.setSlugProducto(p.getSlugProducto());

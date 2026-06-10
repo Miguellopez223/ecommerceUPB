@@ -378,6 +378,38 @@
           }
         },
         {
+          "name": "Crear usuario (ADMIN, rol + WhatsApp + catalogo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Operador Catalogo\",\n  \"email\": \"operador@comercio1.com\",\n  \"password\": \"Operador123**\",\n  \"rol\": \"ADMIN\",\n  \"numeroWhatsapp\": \"59170000000\",\n  \"visibleCatalogo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            },
+            "description": "A diferencia de /registrar (publico, siempre CLIENTE), este endpoint ADMIN respeta el rol y fija numeroWhatsapp y visibleCatalogo (para el catalogo publico)."
+          }
+        },
+        {
           "name": "Listar usuarios por tienda (ADMIN)",
           "request": {
             "method": "GET",
@@ -426,7 +458,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Ana Garcia Lopez\",\n  \"email\": \"cliente@comercio1.com\",\n  \"password\": \"\",\n  \"rol\": \"CLIENTE\"\n}",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Ana Garcia Lopez\",\n  \"email\": \"cliente@comercio1.com\",\n  \"password\": \"\",\n  \"rol\": \"CLIENTE\",\n  \"numeroWhatsapp\": \"59171111111\",\n  \"visibleCatalogo\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1625,6 +1657,343 @@
               ]
             },
             "description": "notification_type=transaction con status=PAGADO. Marca el Pago como EXITOSO y el Pedido como PAGADO. Antes: genera un QR (08 - Pedidos) y pega el id devuelto por Stereum en transaction.id de este cuerpo."
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Dashboard (ADMIN)",
+      "item": [
+        {
+          "name": "Metricas de la tienda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "tienda",
+                "1"
+              ]
+            },
+            "description": "Totales de productos y movimientos, productos agotados, stock bajo, ventas e ingresos de hoy, ultimas 5 ventas completadas y panel de alertas de stock. Solo ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Reportes (ADMIN)",
+      "description": "Reportes analiticos (5 pestañas). Parametros desde/hasta opcionales (yyyy-MM-dd); por defecto, ultimos 30 dias. Nota: solo aparecen pedidos con fecha_creacion (los creados despues del cambio); si no ves datos, amplia el rango.",
+      "item": [
+        {
+          "name": "1. Analitico (dia / categoria / hora / semana)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/tienda/1/analitico?desde=2026-01-01&hasta=2026-12-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "tienda",
+                "1",
+                "analitico"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-12-31"
+                }
+              ]
+            },
+            "description": "Ventas/ingresos por dia, por categoria, por hora (heatmap) y comparativa semana actual vs. anterior con % de variacion."
+          }
+        },
+        {
+          "name": "2. Ventas (utilidad, margen, metodo de pago)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/tienda/1/ventas?desde=2026-01-01&hasta=2026-12-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "tienda",
+                "1",
+                "ventas"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-12-31"
+                }
+              ]
+            },
+            "description": "Total ventas, ingresos brutos, costo de ventas, utilidad bruta, ticket promedio, margen % y desglose por metodo de pago."
+          }
+        },
+        {
+          "name": "3. Productos (mas vendidos / muertos / valorizacion)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/tienda/1/productos?desde=2026-01-01&hasta=2026-12-31&diasSinMovimiento=30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "tienda",
+                "1",
+                "productos"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-12-31"
+                },
+                {
+                  "key": "diasSinMovimiento",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Ranking top 10 mas vendidos, productos muertos (sin salida en N dias), valorizacion del inventario (a costo y a venta) y stock critico."
+          }
+        },
+        {
+          "name": "4. Clientes (ranking por compras)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/tienda/1/clientes?desde=2026-01-01&hasta=2026-12-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "tienda",
+                "1",
+                "clientes"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-12-31"
+                }
+              ]
+            },
+            "description": "Reemplaza el ranking de vendedores de CompuWeb: aqui las ventas son autoservicio, asi que se rankea a los clientes por total gastado."
+          }
+        },
+        {
+          "name": "5. Movimientos (filtrable)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/tienda/1/movimientos?tipo=SALIDA&desde=2026-01-01&hasta=2026-12-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "tienda",
+                "1",
+                "movimientos"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "SALIDA",
+                  "description": "ENTRADA o SALIDA (opcional)"
+                },
+                {
+                  "key": "usuarioId",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "desde",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-12-31"
+                }
+              ]
+            },
+            "description": "Historial de movimientos filtrable por tipo, usuarioId y rango de fechas (todos opcionales)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Unidades de Medida",
+      "item": [
+        {
+          "name": "Listar por tienda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/unidades-medida/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "unidades-medida",
+                "tienda",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Kilogramo\",\n  \"abreviatura\": \"kg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/unidades-medida",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "unidades-medida"
+              ]
+            },
+            "description": "Crea una unidad de medida. Anota el id devuelto para usarlo en Actualizar/Eliminar y al asignarla a un producto (campo unidadMedidaId)."
+          }
+        },
+        {
+          "name": "Actualizar (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiendaId\": 1,\n  \"nombre\": \"Kilogramo\",\n  \"abreviatura\": \"Kg.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/unidades-medida/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "unidades-medida",
+                "1"
+              ]
+            },
+            "description": "Reemplaza el 1 del path por el id real de la unidad creada."
+          }
+        },
+        {
+          "name": "Eliminar (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/unidades-medida/tienda/1/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "unidades-medida",
+                "tienda",
+                "1",
+                "1"
+              ]
+            },
+            "description": "Soft-delete (estado=false). El ultimo segmento es el id de la unidad."
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 - Catalogo Publico (sin token)",
+      "item": [
+        {
+          "name": "Ver catalogo por slug",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalogo/comercio1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "catalogo",
+                "comercio1"
+              ]
+            },
+            "description": "Endpoint PUBLICO (sin JWT): devuelve la tienda, sus productos activos y los contactos de WhatsApp de los usuarios con visibleCatalogo=true. El ultimo segmento es el slug de la tienda."
           }
         }
       ]

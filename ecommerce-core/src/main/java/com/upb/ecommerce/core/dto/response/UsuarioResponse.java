@@ -12,6 +12,8 @@ public class UsuarioResponse {
     private String nombre;
     private String email;
     private RolType rol;
+    private String numeroWhatsapp;
+    private Boolean visibleCatalogo;
     private Boolean estado;
 
     public static UsuarioResponse fromEntity(Usuario u) {
@@ -21,6 +23,8 @@ public class UsuarioResponse {
         r.setNombre(u.getNombre());
         r.setEmail(u.getEmail());
         r.setRol(u.getRol());
+        r.setNumeroWhatsapp(u.getNumeroWhatsapp());
+        r.setVisibleCatalogo(u.getVisibleCatalogo());
         r.setEstado(u.getEstado());
         return r;
     }

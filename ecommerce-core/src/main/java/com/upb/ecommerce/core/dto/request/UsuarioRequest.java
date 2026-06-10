@@ -25,4 +25,10 @@ public class UsuarioRequest {
     /** ADMIN o CLIENTE — Jackson deserializa automáticamente desde el JSON string. */
     @NotNull
     private RolType rol;
+
+    /** Opcional: número de WhatsApp para contacto / catálogo público. */
+    private String numeroWhatsapp;
+
+    /** Opcional: si el usuario se muestra como contacto en el catálogo público. */
+    private Boolean visibleCatalogo;
 }

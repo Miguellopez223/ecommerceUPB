@@ -15,6 +15,8 @@ public class ProductoRequest {
 
     private Long categoriaId;
 
+    private Long unidadMedidaId;
+
     @NotBlank
     private String nombre;
 
