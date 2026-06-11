@@ -31,9 +31,14 @@ public class SecurityConfig implements Serializable {
     @Order(1)
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            CorsFilter corsFilter,
-                                           JwtTokenFilter jwtTokenFilter) throws Exception {
+                                           JwtTokenFilter jwtTokenFilter,
+                                           // --- PREGUNTA 6 ---
+                                           V2BlockingFilter v2BlockingFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                // --- PREGUNTA 6 ---
+                // Se coloca el filtro que bloquea (403) los paths con versión v2
+                .addFilterBefore(v2BlockingFilter, SessionManagementFilter.class)
                 .addFilterBefore(corsFilter, SessionManagementFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         // Swagger

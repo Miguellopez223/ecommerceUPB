@@ -1,0 +1,105 @@
+[INFO] Scanning for projects...
+Downloading from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/cyclonedx/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml
+Progress (1): 243 BProgress (2): 243 B | 255 BProgress (3): 243 B | 255 B | 234 BProgress (4): 243 B | 255 B | 234 B | 249 B                                           Downloaded from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml (234 B at 300 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/cyclonedx/maven-metadata.xml (243 B at 311 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml (249 B at 319 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml (255 B at 326 B/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml
+Progress (1): 242 BProgress (2): 242 B | 375 BProgress (3): 242 B | 375 B | 398 BProgress (4): 242 B | 375 B | 398 B | 394 B                                           Downloaded from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml (242 B at 1.8 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml (375 B at 2.8 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml (398 B at 2.9 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml (394 B at 2.9 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
+Progress (1): 3.1 kBProgress (1): 7.7 kBProgress (1): 12 kB Progress (1): 17 kBProgress (1): 20 kBProgress (1): 21 kBProgress (2): 21 kB | 4.6 kBProgress (2): 21 kB | 9.7 kBProgress (2): 21 kB | 14 kB                            Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 84 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 75 kB/s)
+[INFO] 
+[INFO] -----------------------< com.upb:ecommerce-api >------------------------
+[INFO] Building ecommerce-api 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:4.0.6:run (default-cli) > test-compile @ ecommerce-api >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ ecommerce-api ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ ecommerce-api ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ ecommerce-api ---
+[INFO] skip non existing resourceDirectory C:\Users\Dell\Documents\UPB\5to Semestre\Certificacion III\proyectos Idea\ecommerce\ecommerce-api\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ ecommerce-api ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:4.0.6:run (default-cli) < test-compile @ ecommerce-api <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:4.0.6:run (default-cli) @ ecommerce-api ---
+[INFO] Attaching agents: []
+2026-06-11T18:02:20.962-04:00  INFO 4624 --- [ecommerce] [           main] com.upb.ecommerce.EcommerceApplication   : Starting EcommerceApplication using Java 22 with PID 4624 (C:\Users\Dell\Documents\UPB\5to Semestre\Certificacion III\proyectos Idea\ecommerce\ecommerce-api\target\classes started by Dell in C:\Users\Dell\Documents\UPB\5to Semestre\Certificacion III\proyectos Idea\ecommerce\ecommerce-api)
+2026-06-11T18:02:20.968-04:00  INFO 4624 --- [ecommerce] [           main] com.upb.ecommerce.EcommerceApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-06-11T18:02:21.561-04:00  INFO 4624 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-11T18:02:21.628-04:00  INFO 4624 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 59 ms. Found 13 JPA repository interfaces.
+2026-06-11T18:02:22.143-04:00  INFO 4624 --- [ecommerce] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8081 (http)
+2026-06-11T18:02:22.162-04:00  INFO 4624 --- [ecommerce] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-11T18:02:22.162-04:00  INFO 4624 --- [ecommerce] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-06-11T18:02:22.216-04:00  INFO 4624 --- [ecommerce] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1205 ms
+2026-06-11T18:02:22.343-04:00  INFO 4624 --- [ecommerce] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-11T18:02:22.386-04:00  INFO 4624 --- [ecommerce] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-11T18:02:22.737-04:00  INFO 4624 --- [ecommerce] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-11T18:02:22.767-04:00  INFO 4624 --- [ecommerce] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-11T18:02:22.934-04:00  INFO 4624 --- [ecommerce] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@a7ae340
+2026-06-11T18:02:22.934-04:00  INFO 4624 --- [ecommerce] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-11T18:02:22.992-04:00  INFO 4624 --- [ecommerce] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/ecommerceUPB]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.3
+	Default catalog/schema: ecommerceUPB/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-11T18:02:24.052-04:00  INFO 4624 --- [ecommerce] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-11T18:02:24.143-04:00  INFO 4624 --- [ecommerce] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-11T18:02:24.197-04:00  INFO 4624 --- [ecommerce] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-11T18:02:24.930-04:00  INFO 4624 --- [ecommerce] [           main] c.upb.ecommerce.api.config.CorsFilter    : [init], CORS Filter init
+2026-06-11T18:02:25.137-04:00  INFO 4624 --- [ecommerce] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name usuarioDetailsServiceImpl
+2026-06-11T18:02:25.572-04:00  WARN 4624 --- [ecommerce] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-11T18:02:25.779-04:00  INFO 4624 --- [ecommerce] [           main] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]
+2026-06-11T18:02:26.082-04:00  INFO 4624 --- [ecommerce] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8081 (http) with context path '/'
+2026-06-11T18:02:26.082-04:00  INFO 4624 --- [ecommerce] [           main] com.upb.ecommerce.EcommerceApplication   : Started EcommerceApplication in 5.551 seconds (process running for 5.871)
+Hibernate: 
+    select
+        count(*) 
+    from
+        tiendas t1_0
+Hibernate: 
+    select
+        count(*) 
+    from
+        usuarios u1_0
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  02:43 min
+[INFO] Finished at: 2026-06-11T18:05:00-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:4.0.6:run (default-cli) on project ecommerce-api: Process terminated with exit code: -1 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

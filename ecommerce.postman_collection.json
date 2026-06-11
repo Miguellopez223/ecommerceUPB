@@ -1997,6 +1997,271 @@
           }
         }
       ]
+    },
+    {
+      "name": "17 - PREGUNTA 5 (Async + nueva Tx + rollback)",
+      "description": "Prueba del metodo asincrono (@Async) que abre una NUEVA transaccion (REQUIRES_NEW) y actualiza un Producto; si el producto NO existe, hace ROLLBACK. La API responde 202 Accepted de inmediato; el resultado real se ve en los LOGS de la consola de la app. Requiere token ADMIN (corre Login Admin primero).",
+      "item": [
+        {
+          "name": "1. Ajustar stock async (OK, producto 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted (encolado async)', function () { pm.response.to.have.status(202); });",
+                  "console.log('Revisa la consola de la app: debe loguear el hilo async- y el commit del nuevo stock.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/async/productos/1/stock?nuevoStock=99",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "async",
+                "productos",
+                "1",
+                "stock"
+              ],
+              "query": [
+                {
+                  "key": "nuevoStock",
+                  "value": "99"
+                }
+              ]
+            },
+            "description": "Producto 1 existe -> el metodo async actualiza su stock a 99 y registra un MovimientoInventario de auditoria, todo en la NUEVA transaccion (commit). En la consola veras: '[async] Hilo async-... Stock del producto 1 actualizado X -> 99'."
+          }
+        },
+        {
+          "name": "2. Ajustar stock async (ROLLBACK, producto 99999)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted (igual responde 202)', function () { pm.response.to.have.status(202); });",
+                  "console.log('La API responde 202, PERO en la consola debe aparecer NotDataFoundException y ROLLBACK: nada se persiste.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/async/productos/99999/stock?nuevoStock=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "async",
+                "productos",
+                "99999",
+                "stock"
+              ],
+              "query": [
+                {
+                  "key": "nuevoStock",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Producto 99999 NO existe -> el metodo async lanza NotDataFoundException (RuntimeException) y la NUEVA transaccion hace ROLLBACK. Como el metodo es void + @Async, la excepcion NO vuelve al cliente (la API ya devolvio 202); se ve solo en los LOGS."
+          }
+        },
+        {
+          "name": "3. Verificar stock del producto 1 (tras el OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/tienda/1/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "tienda",
+                "1",
+                "1"
+              ]
+            },
+            "description": "Confirma que el ajuste async commiteo: el campo 'stock' del producto 1 debe ser 99 (esperar 1-2 seg tras el request 1, porque es asincrono)."
+          }
+        },
+        {
+          "name": "4. Verificar movimiento de auditoria (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/inventario/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventario",
+                "tienda",
+                "1"
+              ]
+            },
+            "description": "Debe aparecer un movimiento con referencia 'Ajuste asincrono de stock (PREGUNTA 5)' generado por el caso OK. El caso de ROLLBACK NO deja ningun movimiento."
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 - PREGUNTA 6 (Bloqueo de paths v2 -> 403)",
+      "description": "El V2BlockingFilter rechaza con 403 cualquier path que tenga 'v2' como segmento, ANTES de la seguridad. No requiere token (por eso estos requests van sin auth). El cuerpo de error es: {\"error\":\"La version v2 del API no esta disponible (403 Forbidden)\"}.",
+      "item": [
+        {
+          "name": "1. v2 al inicio del path -> 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/productos/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "productos",
+                "tienda",
+                "1"
+              ]
+            },
+            "description": "Path con segmento v2 -> bloqueado con 403 aunque no exista ese endpoint. Sin token."
+          }
+        },
+        {
+          "name": "2. v2 al final del path -> 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/v2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "v2"
+              ]
+            },
+            "description": "v2 como ultimo segmento -> 403."
+          }
+        },
+        {
+          "name": "3. V2 en mayusculas -> 403 (case-insensitive)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/V2/cualquier-cosa",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "V2",
+                "cualquier-cosa"
+              ]
+            },
+            "description": "El filtro compara ignorando mayusculas (equalsIgnoreCase), asi que V2 tambien se bloquea con 403."
+          }
+        },
+        {
+          "name": "4. Path normal SIN v2 -> NO bloqueado (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('NO es 403 del filtro v2', function () { pm.expect(pm.response.code).to.not.eql(403); });",
+                  "pm.test('200 OK (endpoint publico)', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tiendas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tiendas"
+              ]
+            },
+            "description": "Contraprueba: un path sin segmento v2 NO lo toca el filtro. /api/tiendas es publico, devuelve 200. (Un path tipo /api/productos-v2 tampoco se bloquea, porque v2 no es un segmento, sino parte del nombre.)"
+          }
+        }
+      ]
     }
   ]
 }
