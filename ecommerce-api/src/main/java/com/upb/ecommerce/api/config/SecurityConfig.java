@@ -42,6 +42,10 @@ public class SecurityConfig implements Serializable {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        // Frontend SPA estatico (servido desde classpath:/static)
+                        .requestMatchers(HttpMethod.GET,
+                                "/", "/index.html", "/app.js", "/styles.css", "/favicon.ico"
+                        ).permitAll()
                         // Endpoints publicos - registro, login (auth) y gestion de tiendas
                         .requestMatchers(HttpMethod.POST, "/api/auth").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/externo").permitAll()

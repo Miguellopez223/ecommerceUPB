@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecommerce UPB — Panel</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:," />
+</head>
+<body>
+  <!-- ───────────────── Login ───────────────── -->
+  <section id="login-view" class="login-view">
+    <form id="login-form" class="login-card" autocomplete="on">
+      <h1>Ecommerce UPB</h1>
+      <p class="login-sub">Panel de administración</p>
+
+      <label for="login-tienda">Tienda</label>
+      <select id="login-tienda" required></select>
+
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" placeholder="admin@comercio1.com" required />
+
+      <label for="login-password">Contraseña</label>
+      <input id="login-password" type="password" placeholder="••••••••" required />
+
+      <button type="submit" class="btn btn-primary btn-block" id="login-btn">Ingresar</button>
+      <p id="login-error" class="form-error" hidden></p>
+    </form>
+  </section>
+
+  <!-- ───────────────── App ───────────────── -->
+  <div id="app-view" class="app-view" hidden>
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menu-toggle" class="icon-btn" aria-label="Menú">☰</button>
+        <span class="brand">Ecommerce UPB</span>
+      </div>
+      <div class="topbar-right">
+        <span id="user-info" class="user-info"></span>
+        <button id="logout-btn" class="btn btn-ghost">Salir</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside id="sidebar" class="sidebar">
+        <nav id="nav"></nav>
+      </aside>
+      <main id="content" class="content"></main>
+    </div>
+  </div>
+
+  <!-- Modal de formularios -->
+  <div id="modal-root" class="modal-root" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 id="modal-title">Formulario</h2>
+        <button class="icon-btn" data-close aria-label="Cerrar">✕</button>
+      </div>
+      <form id="modal-form" class="modal-form"></form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
+        <button type="submit" form="modal-form" class="btn btn-primary" id="modal-save">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

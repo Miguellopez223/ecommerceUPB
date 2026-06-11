@@ -1,0 +1,186 @@
+:root {
+  --bg: #0f172a;
+  --bg-soft: #1e293b;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-soft: #64748b;
+  --primary: #4f46e5;
+  --primary-dark: #4338ca;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+  --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: var(--surface-2);
+}
+a { color: var(--primary); }
+[hidden] { display: none !important; }
+
+/* ───────── Botones ───────── */
+.btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: .5rem .9rem;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, opacity .15s;
+}
+.btn:disabled { opacity: .6; cursor: default; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
+.btn-ghost:hover { background: var(--surface-2); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-sm { padding: .3rem .6rem; font-size: .8rem; }
+.btn-block { width: 100%; margin-top: .5rem; }
+.icon-btn {
+  background: none; border: none; font-size: 1.2rem; cursor: pointer;
+  color: inherit; padding: .25rem .5rem; border-radius: 6px; line-height: 1;
+}
+.icon-btn:hover { background: rgba(255,255,255,.12); }
+
+/* ───────── Login ───────── */
+.login-view {
+  min-height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #4f46e5, #0f172a);
+  padding: 1rem;
+}
+.login-card {
+  background: var(--surface);
+  width: 100%; max-width: 380px;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.25);
+  display: flex; flex-direction: column;
+}
+.login-card h1 { margin: 0; font-size: 1.5rem; }
+.login-sub { margin: .25rem 0 1.5rem; color: var(--text-soft); font-size: .9rem; }
+.login-card label { font-size: .8rem; font-weight: 600; margin-bottom: .25rem; color: var(--text-soft); }
+.login-card input, .login-card select {
+  margin-bottom: 1rem; padding: .6rem .7rem; border: 1px solid var(--border);
+  border-radius: 8px; font-size: .95rem;
+}
+.form-error { color: var(--danger); font-size: .85rem; margin: .75rem 0 0; }
+
+/* ───────── Topbar / layout ───────── */
+.topbar {
+  background: var(--bg); color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .6rem 1rem; height: 56px;
+}
+.topbar-left, .topbar-right { display: flex; align-items: center; gap: .75rem; }
+.brand { font-weight: 700; font-size: 1.05rem; }
+.user-info { font-size: .85rem; color: #cbd5e1; }
+#menu-toggle { display: none; }
+
+.layout { display: flex; min-height: calc(100vh - 56px); }
+.sidebar {
+  width: 220px; background: var(--bg-soft); padding: 1rem .5rem; flex-shrink: 0;
+}
+.sidebar nav { display: flex; flex-direction: column; gap: .15rem; }
+.nav-link {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .6rem .8rem; border-radius: 8px;
+  color: #cbd5e1; text-decoration: none; font-size: .9rem; font-weight: 500;
+  cursor: pointer; border: none; background: none; text-align: left; width: 100%;
+}
+.nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
+.nav-link.active { background: var(--primary); color: #fff; }
+.content { flex: 1; padding: 1.5rem; overflow-x: auto; }
+
+/* ───────── Cabecera de vista ───────── */
+.view-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.view-header h1 { margin: 0; font-size: 1.4rem; }
+.view-header p { margin: .25rem 0 0; color: var(--text-soft); font-size: .9rem; }
+
+/* ───────── Tabla ───────── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+}
+.table-wrap { width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th, td { padding: .7rem .9rem; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { background: var(--surface-2); font-weight: 600; color: var(--text-soft); font-size: .8rem; text-transform: uppercase; letter-spacing: .02em; }
+tbody tr:hover { background: var(--surface-2); }
+td.actions { text-align: right; }
+td.actions .btn { margin-left: .35rem; }
+.empty { padding: 2rem; text-align: center; color: var(--text-soft); }
+
+.badge { display: inline-block; padding: .15rem .55rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.badge-on { background: #dcfce7; color: var(--success); }
+.badge-off { background: #fee2e2; color: var(--danger); }
+.badge-admin { background: #e0e7ff; color: var(--primary-dark); }
+.badge-cliente { background: #f1f5f9; color: var(--text-soft); }
+
+/* ───────── Dashboard ───────── */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; box-shadow: var(--shadow); }
+.metric .label { font-size: .8rem; color: var(--text-soft); text-transform: uppercase; letter-spacing: .03em; }
+.metric .value { font-size: 1.8rem; font-weight: 700; margin-top: .35rem; }
+.metric.warn .value { color: var(--warning); }
+.metric.danger .value { color: var(--danger); }
+.section-title { margin: 1.5rem 0 .75rem; font-size: 1.05rem; }
+
+/* ───────── Formularios ───────── */
+.field { display: flex; flex-direction: column; margin-bottom: 1rem; }
+.field label { font-size: .8rem; font-weight: 600; margin-bottom: .3rem; color: var(--text-soft); }
+.field input, .field select, .field textarea {
+  padding: .55rem .65rem; border: 1px solid var(--border); border-radius: 8px; font-size: .92rem; font-family: inherit;
+}
+.field textarea { resize: vertical; min-height: 70px; }
+.field-check { flex-direction: row; align-items: center; gap: .5rem; }
+.field-check input { width: auto; }
+.field-check label { margin: 0; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+.form-grid .full { grid-column: 1 / -1; }
+
+/* ───────── Modal ───────── */
+.modal-root { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(15,23,42,.55); }
+.modal {
+  position: relative; background: var(--surface); border-radius: 14px;
+  width: 100%; max-width: 560px; max-height: 90vh; display: flex; flex-direction: column;
+  box-shadow: 0 24px 48px rgba(0,0,0,.3);
+}
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+.modal-header h2 { margin: 0; font-size: 1.15rem; }
+.modal-header .icon-btn { color: var(--text-soft); }
+.modal-header .icon-btn:hover { background: var(--surface-2); }
+.modal-form { padding: 1.25rem; overflow-y: auto; }
+.modal-footer { display: flex; justify-content: flex-end; gap: .6rem; padding: 1rem 1.25rem; border-top: 1px solid var(--border); }
+
+/* ───────── Toast ───────── */
+.toast {
+  position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 100;
+  padding: .8rem 1.1rem; border-radius: 10px; color: #fff; font-size: .9rem; font-weight: 500;
+  box-shadow: 0 10px 25px rgba(0,0,0,.2); max-width: 360px;
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+
+.loading { padding: 2rem; text-align: center; color: var(--text-soft); }
+
+/* ───────── Responsive ───────── */
+@media (max-width: 760px) {
+  #menu-toggle { display: inline-block; }
+  .sidebar { position: fixed; top: 56px; left: 0; bottom: 0; z-index: 40; transform: translateX(-100%); transition: transform .2s; }
+  .sidebar.open { transform: translateX(0); }
+  .form-grid { grid-template-columns: 1fr; }
+}
