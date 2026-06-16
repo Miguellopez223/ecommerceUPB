@@ -8,13 +8,18 @@ import com.upb.ecommerce.data.repository.ProductoRepository;
 import com.upb.ecommerce.data.repository.TiendaRepository;
 import com.upb.ecommerce.data.repository.UsuarioRepository;
 import com.upb.ecommerce.domain.entities.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
+@Slf4j
 @Service
 public class CarritoService {
 
@@ -23,17 +28,53 @@ public class CarritoService {
     private final ProductoRepository productoRepository;
     private final TiendaRepository tiendaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EmailService emailService;
 
     public CarritoService(CarritoRepository carritoRepository,
                           DetalleCarritoRepository detalleCarritoRepository,
                           ProductoRepository productoRepository,
                           TiendaRepository tiendaRepository,
-                          UsuarioRepository usuarioRepository) {
+                          UsuarioRepository usuarioRepository,
+                          EmailService emailService) {
         this.carritoRepository = carritoRepository;
         this.detalleCarritoRepository = detalleCarritoRepository;
         this.productoRepository = productoRepository;
         this.tiendaRepository = tiendaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.emailService = emailService;
+    }
+
+    /**
+     * Procesa UN carrito abandonado en segundo plano (un hilo del pool de {@code @Async}).
+     * Le envía el recordatorio por correo al cliente y lo marca como ABANDONADO.
+     * Devuelve un {@link Future} con el id del carrito para que el barrido pueda esperar a
+     * que todos los trabajadores de la página terminen.
+     */
+    @Async
+    @Transactional
+    public Future<Long> procesarCarritoAbandonado(Long carritoId) {
+        Carrito carrito = carritoRepository.findById(carritoId).orElse(null);
+        // Re-validamos dentro del hilo: pudo cambiar de estado mientras esperaba en la cola.
+        if (carrito == null || !"ACTIVO".equals(carrito.getEstado())) {
+            return CompletableFuture.completedFuture(carritoId);
+        }
+
+        int cantidadItems = carrito.getDetalles() == null ? 0 : carrito.getDetalles().size();
+        if (cantidadItems > 0) {
+            Usuario cliente = carrito.getUsuario();
+            try {
+                emailService.enviarRecordatorioCarrito(
+                        cliente.getEmail(), cliente.getNombre(), cantidadItems, carrito.getTotalEstimado());
+                log.info("Recordatorio de carrito {} enviado a {}", carritoId, cliente.getEmail());
+            } catch (Exception e) {
+                // Un fallo de correo no debe impedir marcar el carrito como abandonado.
+                log.warn("No se pudo enviar el correo del carrito {}: {}", carritoId, e.getMessage());
+            }
+        }
+
+        carrito.setEstado("ABANDONADO");
+        carritoRepository.save(carrito);
+        return CompletableFuture.completedFuture(carritoId);
     }
 
     public CarritoResponse obtenerCarritoActivo(Long tiendaId, Long usuarioId) {

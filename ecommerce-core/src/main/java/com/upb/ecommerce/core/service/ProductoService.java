@@ -10,6 +10,8 @@ import com.upb.ecommerce.domain.entities.Categoria;
 import com.upb.ecommerce.domain.entities.Producto;
 import com.upb.ecommerce.domain.entities.Tienda;
 import com.upb.ecommerce.domain.entities.UnidadMedida;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,12 @@ public class ProductoService {
     public List<ProductoResponse> listarPorTienda(Long tiendaId) {
         return productoRepository.findByTiendaIdAndEstadoTrue(tiendaId)
                 .stream().map(ProductoResponse::fromEntity).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductoResponse> listarPorTiendaPaginado(Long tiendaId, Pageable pageable) {
+        return productoRepository.findByTiendaIdAndEstadoTrue(tiendaId, pageable)
+                .map(ProductoResponse::fromEntity);
     }
 
     public List<ProductoResponse> listarPorCategoria(Long tiendaId, Long categoriaId) {

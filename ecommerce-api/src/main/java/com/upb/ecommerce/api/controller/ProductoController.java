@@ -4,6 +4,9 @@ import com.upb.ecommerce.core.dto.request.ProductoRequest;
 import com.upb.ecommerce.core.dto.response.ProductoResponse;
 import com.upb.ecommerce.core.service.ProductoService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +27,17 @@ public class ProductoController {
     @GetMapping("/tienda/{tiendaId}")
     public ResponseEntity<List<ProductoResponse>> listarPorTienda(@PathVariable Long tiendaId) {
         return ResponseEntity.ok(productoService.listarPorTienda(tiendaId));
+    }
+
+    @GetMapping("/tienda/{tiendaId}/paginado")
+    public ResponseEntity<Page<ProductoResponse>> listarPorTiendaPaginado(
+            @PathVariable Long tiendaId,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "nombre") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "ASC") Sort.Direction sortDir) {
+        return ResponseEntity.ok(productoService.listarPorTiendaPaginado(
+                tiendaId, PageRequest.of(page, size, Sort.by(sortDir, sortBy))));
     }
 
     @GetMapping("/tienda/{tiendaId}/categoria/{categoriaId}")

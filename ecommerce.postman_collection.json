@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Ecommerce UPB - API",
-    "description": "Coleccion completa de la API multi-tienda (Spring Boot, puerto 8081).\n\nFlujo recomendado:\n1. Carpeta '00 - Auth' -> 'Login Admin' (guarda el JWT en la variable {{token}} automaticamente).\n2. El resto de requests usan {{token}} via Bearer heredado.\n\nVariables de coleccion:\n- baseUrl: http://localhost:8081\n- token: se setea solo al hacer login.\n\nDatos reales sembrados en la BD: tienda 1 (comercio1), admin id=1, cliente id=2, categoria 1, producto 1, etc.",
+    "description": "Coleccion completa de la API multi-tienda (Spring Boot, puerto 8081).\n\nFlujo recomendado:\n1. Carpeta '00 - Auth' -> 'Login Admin' (guarda el JWT en la variable {{token}} automaticamente).\n2. El resto de requests heredan el {{token}} automaticamente (auth a nivel de coleccion).\n\nVariables de coleccion:\n- baseUrl: http://localhost:8081\n- token: se setea solo al hacer login.\n\nDatos reales sembrados en la BD: tienda 1 (comercio1), admin id=1, cliente id=2, categoria 1, producto 1, etc.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -648,6 +648,49 @@
           }
         },
         {
+          "name": "Listar productos por tienda (paginado)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/tienda/1/paginado?page=0&size=10&sortBy=nombre&sortDir=ASC",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "tienda",
+                "1",
+                "paginado"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "Numero de pagina (empieza en 0)."
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": "Cantidad de elementos por pagina."
+                },
+                {
+                  "key": "sortBy",
+                  "value": "nombre",
+                  "description": "Campo de orden: nombre, precio, stock, id, etc."
+                },
+                {
+                  "key": "sortDir",
+                  "value": "ASC",
+                  "description": "Direccion del orden: ASC o DESC."
+                }
+              ]
+            },
+            "description": "Listado de productos activos de la tienda con paginacion. Devuelve un objeto Page con content[], totalElements, totalPages, number, size, etc. Todos los query params son opcionales (defaults: page=0, size=10, sortBy=nombre, sortDir=ASC)."
+          }
+        },
+        {
           "name": "Listar productos por categoria",
           "request": {
             "method": "GET",
@@ -1099,6 +1142,25 @@
                 "vaciar"
               ]
             }
+          }
+        },
+        {
+          "name": "Barrer carritos abandonados (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/carrito/barrer-abandonados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "carrito",
+                "barrer-abandonados"
+              ]
+            },
+            "description": "Dispara manualmente el barrido de carritos abandonados (el mismo que corre solo cada 8h). Busca carritos ACTIVO sin cambios desde hace mas de carrito.abandono.horas (1h por defecto), por cada uno envia un correo recordatorio al cliente y lo marca como ABANDONADO. Solo ADMIN. La respuesta confirma la ejecucion; el detalle (correos enviados, carritos procesados) sale en los logs del servidor. Para una demo rapida baja carrito.abandono.horas=0 en application.properties."
           }
         }
       ]
