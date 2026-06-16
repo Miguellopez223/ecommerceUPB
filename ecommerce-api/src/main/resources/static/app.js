@@ -103,7 +103,7 @@ async function api(method, path, body) {
   if (text) { try { data = JSON.parse(text); } catch { data = text; } }
 
   if (!res.ok) {
-    const msg = (data && (data.message || data.error || data.mensaje)) ||
+    const msg = (data && (data.detail || data.message || data.error || data.mensaje)) ||
       (typeof data === "string" ? data : null) || `Error ${res.status}`;
     throw new Error(msg);
   }

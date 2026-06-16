@@ -2,6 +2,8 @@ package com.upb.ecommerce.core.service;
 
 import com.upb.ecommerce.core.dto.request.TiendaRequest;
 import com.upb.ecommerce.core.dto.response.TiendaResponse;
+import com.upb.ecommerce.core.exception.NotDataFoundException;
+import com.upb.ecommerce.core.exception.OperationException;
 import com.upb.ecommerce.data.repository.TiendaRepository;
 import com.upb.ecommerce.domain.entities.Tienda;
 import org.springframework.stereotype.Service;
@@ -27,19 +29,19 @@ public class TiendaService {
     public TiendaResponse obtenerPorId(Long id) {
         return TiendaResponse.fromEntity(
                 tiendaRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Tienda no encontrada")));
+                        .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada")));
     }
 
     public TiendaResponse obtenerPorSlug(String slug) {
         return TiendaResponse.fromEntity(
                 tiendaRepository.findBySlug(slug)
-                        .orElseThrow(() -> new RuntimeException("Tienda no encontrada")));
+                        .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada")));
     }
 
     @Transactional
     public TiendaResponse crear(TiendaRequest request) {
         if (tiendaRepository.findBySlug(request.getSlug()).isPresent()) {
-            throw new RuntimeException("Ya existe una tienda con el slug: " + request.getSlug());
+            throw new OperationException("Ya existe una tienda con el slug: " + request.getSlug());
         }
         Tienda tienda = new Tienda();
         tienda.setNombre(request.getNombre());
@@ -53,7 +55,7 @@ public class TiendaService {
     @Transactional
     public TiendaResponse actualizar(Long id, TiendaRequest request) {
         Tienda tienda = tiendaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
+                .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada"));
         tienda.setNombre(request.getNombre());
         tienda.setTelefonoContacto(request.getTelefonoContacto());
         tienda.setEmailContacto(request.getEmailContacto());
@@ -64,7 +66,7 @@ public class TiendaService {
     @Transactional
     public void desactivar(Long id) {
         Tienda tienda = tiendaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
+                .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada"));
         tienda.setEstado(false);
         tiendaRepository.save(tienda);
     }

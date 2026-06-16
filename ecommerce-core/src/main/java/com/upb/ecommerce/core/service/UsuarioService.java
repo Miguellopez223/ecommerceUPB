@@ -4,6 +4,7 @@ import com.upb.ecommerce.core.dto.request.LoginRequest;
 import com.upb.ecommerce.core.dto.request.UsuarioRequest;
 import com.upb.ecommerce.core.dto.response.UsuarioResponse;
 import com.upb.ecommerce.core.exception.NotDataFoundException;
+import com.upb.ecommerce.core.exception.OperationException;
 import com.upb.ecommerce.data.repository.TiendaRepository;
 import com.upb.ecommerce.data.repository.UsuarioRepository;
 import com.upb.ecommerce.domain.entities.Tienda;
@@ -50,7 +51,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada"));
 
         if (usuarioRepository.findByEmailAndTiendaId(request.getEmail(), tienda.getId()).isPresent()) {
-            throw new RuntimeException("Ya existe un usuario con ese email en esta tienda");
+            throw new OperationException("Ya existe un usuario con ese email en esta tienda");
         }
 
         Usuario usuario = new Usuario();
@@ -77,7 +78,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada"));
 
         if (usuarioRepository.findByEmailAndTiendaId(request.getEmail(), tienda.getId()).isPresent()) {
-            throw new RuntimeException("Ya existe un usuario con ese email en esta tienda");
+            throw new OperationException("Ya existe un usuario con ese email en esta tienda");
         }
 
         Usuario usuario = new Usuario();
@@ -121,13 +122,13 @@ public class UsuarioService {
     public Usuario validarCredenciales(LoginRequest request) {
         Usuario usuario = usuarioRepository
                 .findByEmailAndTiendaId(request.getEmail(), request.getTiendaId())
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
+                .orElseThrow(() -> new OperationException("Credenciales inválidas"));
 
         if (!usuario.getEstado()) {
-            throw new RuntimeException("Usuario inactivo");
+            throw new OperationException("Usuario inactivo");
         }
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
-            throw new RuntimeException("Credenciales inválidas");
+            throw new OperationException("Credenciales inválidas");
         }
         return usuario;
     }

@@ -2,6 +2,8 @@ package com.upb.ecommerce.core.service;
 
 import com.upb.ecommerce.core.dto.request.PagoRequest;
 import com.upb.ecommerce.core.dto.response.PagoResponse;
+import com.upb.ecommerce.core.exception.NotDataFoundException;
+import com.upb.ecommerce.core.exception.OperationException;
 import com.upb.ecommerce.data.repository.PagoRepository;
 import com.upb.ecommerce.data.repository.PedidoRepository;
 import com.upb.ecommerce.domain.entities.Pago;
@@ -30,10 +32,10 @@ public class PagoService {
     @Transactional
     public PagoResponse registrar(PagoRequest request) {
         Pedido pedido = pedidoRepository.findById(request.getPedidoId())
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+                .orElseThrow(() -> new NotDataFoundException("Pedido no encontrado"));
 
         if (request.getMonto().compareTo(pedido.getTotal()) != 0) {
-            throw new RuntimeException("El monto (" + request.getMonto()
+            throw new OperationException("El monto (" + request.getMonto()
                     + ") no coincide con el total del pedido (" + pedido.getTotal() + ")");
         }
 

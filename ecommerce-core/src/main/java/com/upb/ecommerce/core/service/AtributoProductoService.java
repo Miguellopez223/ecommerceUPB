@@ -2,6 +2,7 @@ package com.upb.ecommerce.core.service;
 
 import com.upb.ecommerce.core.dto.request.AtributoProductoRequest;
 import com.upb.ecommerce.core.dto.response.AtributoProductoResponse;
+import com.upb.ecommerce.core.exception.NotDataFoundException;
 import com.upb.ecommerce.data.repository.AtributoProductoRepository;
 import com.upb.ecommerce.data.repository.ProductoRepository;
 import com.upb.ecommerce.domain.entities.AtributoProducto;
@@ -31,7 +32,7 @@ public class AtributoProductoService {
     @Transactional
     public AtributoProductoResponse agregar(AtributoProductoRequest request) {
         Producto producto = productoRepository.findById(request.getProductoId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new NotDataFoundException("Producto no encontrado"));
         AtributoProducto atributo = new AtributoProducto();
         atributo.setProducto(producto);
         atributo.setNombre(request.getNombre());
@@ -42,7 +43,7 @@ public class AtributoProductoService {
     @Transactional
     public AtributoProductoResponse actualizar(Long id, AtributoProductoRequest request) {
         AtributoProducto atributo = atributoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Atributo no encontrado"));
+                .orElseThrow(() -> new NotDataFoundException("Atributo no encontrado"));
         atributo.setNombre(request.getNombre());
         atributo.setValor(request.getValor());
         return AtributoProductoResponse.fromEntity(atributoRepository.save(atributo));
@@ -50,7 +51,7 @@ public class AtributoProductoService {
 
     @Transactional
     public void eliminar(Long id) {
-        if (!atributoRepository.existsById(id)) throw new RuntimeException("Atributo no encontrado");
+        if (!atributoRepository.existsById(id)) throw new NotDataFoundException("Atributo no encontrado");
         atributoRepository.deleteById(id);
     }
 }

@@ -2,6 +2,7 @@ package com.upb.ecommerce.core.service;
 
 import com.upb.ecommerce.core.dto.request.ProductoRequest;
 import com.upb.ecommerce.core.dto.response.ProductoResponse;
+import com.upb.ecommerce.core.exception.NotDataFoundException;
 import com.upb.ecommerce.data.repository.CategoriaRepository;
 import com.upb.ecommerce.data.repository.ProductoRepository;
 import com.upb.ecommerce.data.repository.TiendaRepository;
@@ -54,13 +55,13 @@ public class ProductoService {
     public ProductoResponse obtenerPorId(Long tiendaId, Long productoId) {
         return ProductoResponse.fromEntity(
                 productoRepository.findByIdAndTiendaId(productoId, tiendaId)
-                        .orElseThrow(() -> new RuntimeException("Producto no encontrado")));
+                        .orElseThrow(() -> new NotDataFoundException("Producto no encontrado")));
     }
 
     @Transactional
     public ProductoResponse crear(ProductoRequest request) {
         Tienda tienda = tiendaRepository.findById(request.getTiendaId())
-                .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
+                .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada"));
 
         Producto producto = new Producto();
         producto.setTienda(tienda);
@@ -75,7 +76,7 @@ public class ProductoService {
 
         if (request.getCategoriaId() != null) {
             Categoria cat = categoriaRepository.findById(request.getCategoriaId())
-                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+                    .orElseThrow(() -> new NotDataFoundException("Categoría no encontrada"));
             producto.setCategoria(cat);
         }
         producto.setUnidadMedida(resolverUnidad(request.getUnidadMedidaId()));
@@ -85,7 +86,7 @@ public class ProductoService {
     @Transactional
     public ProductoResponse actualizar(Long id, ProductoRequest request) {
         Producto producto = productoRepository.findByIdAndTiendaId(id, request.getTiendaId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new NotDataFoundException("Producto no encontrado"));
 
         producto.setNombre(request.getNombre());
         producto.setSlugProducto(request.getSlugProducto());
@@ -98,7 +99,7 @@ public class ProductoService {
 
         if (request.getCategoriaId() != null) {
             Categoria cat = categoriaRepository.findById(request.getCategoriaId())
-                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+                    .orElseThrow(() -> new NotDataFoundException("Categoría no encontrada"));
             producto.setCategoria(cat);
         } else {
             producto.setCategoria(null);
@@ -111,13 +112,13 @@ public class ProductoService {
     private UnidadMedida resolverUnidad(Long unidadMedidaId) {
         if (unidadMedidaId == null) return null;
         return unidadMedidaRepository.findById(unidadMedidaId)
-                .orElseThrow(() -> new RuntimeException("Unidad de medida no encontrada"));
+                .orElseThrow(() -> new NotDataFoundException("Unidad de medida no encontrada"));
     }
 
     @Transactional
     public void eliminar(Long tiendaId, Long id) {
         Producto producto = productoRepository.findByIdAndTiendaId(id, tiendaId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new NotDataFoundException("Producto no encontrado"));
         producto.setEstado(false);
         productoRepository.save(producto);
     }

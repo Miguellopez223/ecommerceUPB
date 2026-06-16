@@ -2,6 +2,8 @@ package com.upb.ecommerce.core.service;
 
 import com.upb.ecommerce.core.dto.request.MovimientoInventarioRequest;
 import com.upb.ecommerce.core.dto.response.MovimientoInventarioResponse;
+import com.upb.ecommerce.core.exception.NotDataFoundException;
+import com.upb.ecommerce.core.exception.OperationException;
 import com.upb.ecommerce.data.repository.MovimientoInventarioRepository;
 import com.upb.ecommerce.data.repository.ProductoRepository;
 import com.upb.ecommerce.data.repository.TiendaRepository;
@@ -46,15 +48,15 @@ public class MovimientoInventarioService {
     @Transactional
     public MovimientoInventarioResponse registrar(MovimientoInventarioRequest request) {
         Tienda tienda = tiendaRepository.findById(request.getTiendaId())
-                .orElseThrow(() -> new RuntimeException("Tienda no encontrada"));
+                .orElseThrow(() -> new NotDataFoundException("Tienda no encontrada"));
         Producto producto = productoRepository.findByIdAndTiendaId(request.getProductoId(), request.getTiendaId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado en esta tienda"));
+                .orElseThrow(() -> new NotDataFoundException("Producto no encontrado en esta tienda"));
 
         if (!request.getTipo().equals("ENTRADA") && !request.getTipo().equals("SALIDA")) {
-            throw new RuntimeException("Tipo inválido. Debe ser ENTRADA o SALIDA");
+            throw new OperationException("Tipo inválido. Debe ser ENTRADA o SALIDA");
         }
         if (request.getTipo().equals("SALIDA") && producto.getStock() < request.getCantidad()) {
-            throw new RuntimeException("Stock insuficiente. Disponible: " + producto.getStock());
+            throw new OperationException("Stock insuficiente. Disponible: " + producto.getStock());
         }
 
         if (request.getTipo().equals("ENTRADA")) {
@@ -73,7 +75,7 @@ public class MovimientoInventarioService {
 
         if (request.getUsuarioId() != null) {
             Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                    .orElseThrow(() -> new NotDataFoundException("Usuario no encontrado"));
             movimiento.setUsuario(usuario);
         }
         return MovimientoInventarioResponse.fromEntity(movimientoRepository.save(movimiento));

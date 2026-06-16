@@ -2,6 +2,7 @@ package com.upb.ecommerce.core.service;
 
 import com.upb.ecommerce.core.dto.request.DireccionEnvioRequest;
 import com.upb.ecommerce.core.dto.response.DireccionEnvioResponse;
+import com.upb.ecommerce.core.exception.NotDataFoundException;
 import com.upb.ecommerce.data.repository.DireccionEnvioRepository;
 import com.upb.ecommerce.data.repository.UsuarioRepository;
 import com.upb.ecommerce.domain.entities.DireccionEnvio;
@@ -31,13 +32,13 @@ public class DireccionEnvioService {
     public DireccionEnvioResponse obtenerPorId(Long id) {
         return DireccionEnvioResponse.fromEntity(
                 direccionRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Dirección no encontrada")));
+                        .orElseThrow(() -> new NotDataFoundException("Dirección no encontrada")));
     }
 
     @Transactional
     public DireccionEnvioResponse crear(DireccionEnvioRequest request) {
         Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new NotDataFoundException("Usuario no encontrado"));
         DireccionEnvio direccion = new DireccionEnvio();
         direccion.setUsuario(usuario);
         direccion.setDireccionCalle(request.getDireccionCalle());
@@ -49,7 +50,7 @@ public class DireccionEnvioService {
     @Transactional
     public DireccionEnvioResponse actualizar(Long id, DireccionEnvioRequest request) {
         DireccionEnvio direccion = direccionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Dirección no encontrada"));
+                .orElseThrow(() -> new NotDataFoundException("Dirección no encontrada"));
         direccion.setDireccionCalle(request.getDireccionCalle());
         direccion.setCiudad(request.getCiudad());
         direccion.setReferencias(request.getReferencias());
@@ -59,7 +60,7 @@ public class DireccionEnvioService {
     @Transactional
     public void eliminar(Long id) {
         DireccionEnvio direccion = direccionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Dirección no encontrada"));
+                .orElseThrow(() -> new NotDataFoundException("Dirección no encontrada"));
         direccion.setEstado(false);
         direccionRepository.save(direccion);
     }
