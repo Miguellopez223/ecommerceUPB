@@ -29,6 +29,11 @@
       "key": "stereumApiKey",
       "value": "98ca7eb3-7ce4-4bcb-8785-21dd15de4477",
       "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "miApiKeySecreta1234567890",
+      "type": "string"
     }
   ],
   "item": [
@@ -2259,6 +2264,194 @@
               ]
             },
             "description": "Contraprueba: un path sin segmento v2 NO lo toca el filtro. /api/tiendas es publico, devuelve 200. (Un path tipo /api/productos-v2 tampoco se bloquea, porque v2 no es un segmento, sino parte del nombre.)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 - RECUPERATORIO (Auth: API Key o JWT)",
+      "description": "Prueba de la autenticacion por DOS metodos: el JWT de siempre O un API KEY. El filtro JwtTokenFilter revisa la cabecera 'x-api-key'; si trae la clave correcta (variable {{apiKey}} = miApiKeySecreta1234567890) deja entrar con rol ADMIN, sin necesidad de token. Si no, sigue el camino del JWT.",
+      "item": [
+        {
+          "name": "1. Con API KEY -> entra sin JWT (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK (entro con api key)', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "tienda",
+                "1"
+              ]
+            },
+            "description": "Endpoint protegido (dashboard, solo ADMIN). NO se manda JWT (auth = noauth), solo la cabecera x-api-key con la clave correcta. Debe entrar con 200. En la consola de la app aparece '=== Autenticado con API KEY valida ==='."
+          }
+        },
+        {
+          "name": "2. Con API KEY -> endpoint ADMIN usuarios (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK (api key tiene rol ADMIN)', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "tienda",
+                "1"
+              ]
+            },
+            "description": "Comprueba que el api key entra con rol ADMIN: listar usuarios es solo para ADMIN y aun asi devuelve 200 usando solo la api key."
+          }
+        },
+        {
+          "name": "3. Con API KEY incorrecta -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('NO entra (no es 200)', function () { pm.expect(pm.response.code).to.not.eql(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "clave-incorrecta-123"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "tienda",
+                "1"
+              ]
+            },
+            "description": "Api key equivocada y sin JWT -> el filtro no autentica y el endpoint protegido responde 401 (No autorizado). Demuestra que la api key se valida de verdad."
+          }
+        },
+        {
+          "name": "4. Sin nada (ni JWT ni api key) -> 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('NO entra (no es 200)', function () { pm.expect(pm.response.code).to.not.eql(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "tienda",
+                "1"
+              ]
+            },
+            "description": "Contraprueba: sin token y sin api key, el endpoint protegido responde 401."
+          }
+        },
+        {
+          "name": "5. Con JWT (sigue funcionando, 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK (entro con JWT)', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/tienda/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "tienda",
+                "1"
+              ]
+            },
+            "description": "El metodo de siempre sigue intacto: con el JWT (Bearer {{token}} heredado de la coleccion) tambien entra. Corre antes '00 - Auth > Login Admin' para tener token. Aqui NO se manda api key."
           }
         }
       ]
